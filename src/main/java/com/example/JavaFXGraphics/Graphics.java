@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Graphics extends Application {
     private final AtomicInteger score = new AtomicInteger();
     private final AtomicBoolean continueGame = new AtomicBoolean();
-    private final int maxScore = 2;
+    private final int maxScore = 10;
 
     @Override
     public void start(Stage stage) {
@@ -38,6 +38,8 @@ public class Graphics extends Application {
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
         System.out.println("Button visible: " + retryButton.isVisible());
+        Label maxScoreLabel = new Label();
+        maxScoreLabel.setText("Objective Score: " + maxScore);
         Label scoreLabel = new Label();
         scoreLabel.setText("Score: " + score.get());
         ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
@@ -53,6 +55,7 @@ public class Graphics extends Application {
             scoreLabel.setText("Score: " + score.get());
             buttonLabel.visibleProperty().set(false);
             scoreLabel.visibleProperty().set(true);
+            maxScoreLabel.visibleProperty().set(true);
             continueGame.set(true);
         });
         Group newGroup = new Group();
@@ -66,6 +69,8 @@ public class Graphics extends Application {
         /*
         Set coordinates
          */
+        maxScoreLabel.translateXProperty().set(760);
+        maxScoreLabel.translateYProperty().set(740);
         scoreLabel.translateXProperty().set(920);
         scoreLabel.translateYProperty().set(740);
         buttonLabel.translateXProperty().set(470);
@@ -75,6 +80,7 @@ public class Graphics extends Application {
         /*
         Add children
          */
+        newGroup.getChildren().add(maxScoreLabel);
         newGroup.getChildren().add(buttonLabel);
         newGroup.getChildren().add(retryButton);
         newGroup.getChildren().add(scoreLabel);
@@ -128,6 +134,7 @@ public class Graphics extends Application {
                     stage.setTitle("You Won!");
                     System.out.println("You Won!");
                     continueGame.set(false);
+                    maxScoreLabel.visibleProperty().set(false);
                     scoreLabel.visibleProperty().set(false);
                     buttonLabel.visibleProperty().set(true);
                     buttonLabel.setText("Score: " + score.get());
