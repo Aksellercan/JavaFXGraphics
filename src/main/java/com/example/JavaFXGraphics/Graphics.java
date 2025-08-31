@@ -56,6 +56,7 @@ public class Graphics extends Application {
             buttonLabel.visibleProperty().set(false);
             scoreLabel.visibleProperty().set(true);
             maxScoreLabel.visibleProperty().set(true);
+            stage.setTitle("JavaFX Graphics Test");
             continueGame.set(true);
         });
         Group newGroup = new Group();
