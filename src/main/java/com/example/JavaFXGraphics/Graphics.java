@@ -17,6 +17,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Graphics extends Application {
     private final AtomicInteger score = new AtomicInteger();
     private final AtomicBoolean continueGame = new AtomicBoolean();
+    private final Label buttonLabel = new Label();
+    private final Button retryButton = new Button();
+    private final Label maxScoreLabel = new Label();
+    private final Label scoreLabel = new Label();
     private final int maxScore = 10;
 
     @Override
@@ -28,22 +32,22 @@ public class Graphics extends Application {
         stage.setHeight(800);
         stage.setResizable(false);
         stage.setTitle("JavaFX Graphics Test");
-        stage.setOnCloseRequest( e -> System.out.println("Closing...\n" + e.toString()));
+        stage.setOnCloseRequest( e -> {
+            System.out.println("Closing...\n" + e.toString());
+            continueGame.set(false);
+        });
         /*
         Add objects
          */
-        Label buttonLabel = new Label();
         buttonLabel.visibleProperty().set(false);
-        Button retryButton = new Button();
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
         System.out.println("Button visible: " + retryButton.isVisible());
-        Label maxScoreLabel = new Label();
         maxScoreLabel.setText("Objective Score: " + maxScore);
-        Label scoreLabel = new Label();
         scoreLabel.setText("Score: " + score.get());
         ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
         ImageView bImage = new ImageView(new Image("/Sprites/nether.png"));
+        ImageView aImage = new ImageView(new Image("/Sprites/crafter.png"));
         /*
         Restart button functions
          */
@@ -67,6 +71,7 @@ public class Graphics extends Application {
          */
         CalculateNextPosition(cImage);
         CalculateNextPosition(bImage);
+        CalculateNextPosition(aImage);
         /*
         Set coordinates
          */
@@ -81,6 +86,7 @@ public class Graphics extends Application {
         /*
         Add children
          */
+        newGroup.getChildren().add(aImage);
         newGroup.getChildren().add(maxScoreLabel);
         newGroup.getChildren().add(buttonLabel);
         newGroup.getChildren().add(retryButton);
@@ -92,6 +98,10 @@ public class Graphics extends Application {
         Keypress Event Listener
          */
         continueGame.set(true);
+        /*
+        Move Enemy Sprite
+         */
+        MoveEnemySprite(aImage, cImage);
         stage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (continueGame.get()) {
                 switch (e.getCode()) {
@@ -135,20 +145,73 @@ public class Graphics extends Application {
                     stage.setTitle("You Won!");
                     System.out.println("You Won!");
                     continueGame.set(false);
-                    maxScoreLabel.visibleProperty().set(false);
-                    scoreLabel.visibleProperty().set(false);
-                    buttonLabel.visibleProperty().set(true);
-                    buttonLabel.setText("Score: " + score.get());
-                    retryButton.visibleProperty().set(true);
+                    GameOverScreen();
                 }
             }
         });
         stage.show();
     }
 
+    private void GameOverScreen() {
+        maxScoreLabel.visibleProperty().set(false);
+        scoreLabel.visibleProperty().set(false);
+        buttonLabel.visibleProperty().set(true);
+        buttonLabel.setText("Score: " + score.get());
+        retryButton.visibleProperty().set(true);
+    }
+
     private void RestartGame(ImageView playerSprite, ImageView enemySprite) {
         CalculateNextPosition(playerSprite);
         CalculateNextPosition(enemySprite);
+        MoveEnemySprite(enemySprite, playerSprite);
+    }
+
+    private void MoveEnemySprite(ImageView enemy, ImageView sprite) {
+        /*
+        get current location of sprite
+        if its on same X coordination move down the Y axis
+        if its on same Y coordination move down the X axis
+        Runs concurrently
+        */
+        Thread moveThread = new Thread(() -> {
+            while (continueGame.get()) {
+                if ((sprite.getTranslateX() == enemy.getTranslateX()) && (sprite.getTranslateY() == enemy.getTranslateY())) {
+                    System.out.println("Player got caught!");
+                    continueGame.set(false);
+                    break;
+                }
+                try {
+                    Thread.sleep(750);
+                } catch (InterruptedException e) {
+                    System.err.println(e);
+                    break;
+                }
+                if (!(sprite.getTranslateX() == enemy.getTranslateX()) || !(sprite.getTranslateY() == enemy.getTranslateY())) {
+                    if (sprite.getTranslateY() != enemy.getTranslateY()) {
+                        if (sprite.getTranslateY() < enemy.getTranslateY()) {
+                            System.out.println("Enemy move up");
+                            enemy.translateYProperty().set(enemy.getTranslateY() - 20);
+                        } else {
+                            System.out.println("Enemy move down");
+                            enemy.translateYProperty().set(enemy.getTranslateY() + 20);
+                        }
+                        continue;
+                    }
+                    if (sprite.getTranslateX() != enemy.getTranslateX()) {
+                        if (sprite.getTranslateX() < enemy.getTranslateX()) {
+                            System.out.println("Enemy move left");
+                            enemy.translateXProperty().set(enemy.getTranslateX() - 20);
+                        } else {
+                            System.out.println("Enemy move right");
+                            enemy.translateXProperty().set(enemy.getTranslateX() + 20);
+                        }
+                        continue;
+                    }
+                }
+                System.out.println("DEBUG");
+            }
+        });
+        moveThread.start();
     }
 
     private void CalculateNextPosition(ImageView sprite) {
