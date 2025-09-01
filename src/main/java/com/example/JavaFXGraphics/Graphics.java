@@ -42,6 +42,7 @@ public class Graphics extends Application {
         /*
         Add objects
          */
+        AtomicInteger count = new AtomicInteger();
         buttonLabel.visibleProperty().set(false);
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
@@ -63,6 +64,7 @@ public class Graphics extends Application {
             scoreLabel.visibleProperty().set(true);
             maxScoreLabel.visibleProperty().set(true);
             stage.setTitle("JavaFX Graphics Test");
+            count.set(0);
         });
         Group newGroup = new Group();
         Scene newScene = new Scene(newGroup, stage.getHeight(), stage.getWidth());
@@ -96,7 +98,6 @@ public class Graphics extends Application {
         /*
         Keypress Event Listener
          */
-        AtomicInteger count = new AtomicInteger();
         count.set(0);
         stage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (continueGame.get()) {
