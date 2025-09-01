@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics;
 
+import com.example.JavaFXGraphics.Tools.Configuration;
 import com.example.JavaFXGraphics.Tools.Logger;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -22,7 +23,7 @@ public class Graphics extends Application {
     private final Button retryButton = new Button();
     private final Label maxScoreLabel = new Label();
     private final Label scoreLabel = new Label();
-    private final int maxScore = 10;
+    private final AtomicInteger HighScore = new AtomicInteger();
 
     @Override
     public void start(Stage stage) {
@@ -36,10 +37,10 @@ public class Graphics extends Application {
         stage.setOnCloseRequest( e -> {
             Logger.INFO.Log("Closing...\n" + e.toString());
             continueGame.set(false);
+            Configuration.WriteConfig();
         });
-        Logger.setVerboseLogFile(false);
-        Logger.setColouredOutput(true);
-        Logger.setDebugOutput(true);
+        UpdateSessionSettings();
+        HighScore.set(Configuration.GetHigh_Score());
         /*
         Add objects
          */
@@ -48,7 +49,7 @@ public class Graphics extends Application {
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
         Logger.DEBUG.Log("Button visible: " + retryButton.isVisible());
-        maxScoreLabel.setText("Objective Score: " + maxScore);
+        maxScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.setText("Score: " + score.get());
         ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
         cImage.setId("leaves.png");
@@ -69,6 +70,7 @@ public class Graphics extends Application {
             maxScoreLabel.visibleProperty().set(true);
             stage.setTitle("JavaFX Graphics Test");
             count.set(0);
+            Configuration.WriteConfig();
         });
         Group newGroup = new Group();
         Scene newScene = new Scene(newGroup, stage.getHeight(), stage.getWidth());
@@ -139,19 +141,16 @@ public class Graphics extends Application {
                 if (CheckStatus(cImage, bImage)) {
                     stage.setTitle("Next!");
                     score.set(score.get()+1);
-                    if (!(score.get() == maxScore)) CalculateNextPosition(bImage);
+                    CalculateNextPosition(bImage);
                     scoreLabel.setText("Score: " + score.get());
-                }
-                if (score.get() == maxScore) {
-                    stage.setTitle("You Won!");
-                    Logger.INFO.Log("You Won!");
-                    continueGame.set(false);
-                    GameOverScreen();
                 }
             } else {
                 if (count.get() < 1) {
-                    stage.setTitle("You Lost!");
-                    Logger.INFO.Log("You Lost!");
+                    if (HighScore.get() < score.get()) {
+                        HighScore.set(score.get());
+                    }
+                    stage.setTitle("Game Over!");
+                    Logger.INFO.Log("Game Over!");
                     continueGame.set(false);
                     GameOverScreen();
                 }
@@ -163,10 +162,12 @@ public class Graphics extends Application {
 
     private void GameOverScreen() {
         maxScoreLabel.visibleProperty().set(false);
+        maxScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.visibleProperty().set(false);
         buttonLabel.visibleProperty().set(true);
         buttonLabel.setText("Score: " + score.get());
         retryButton.visibleProperty().set(true);
+        Configuration.SetHigh_Score(HighScore.get());
     }
 
     private void StartGame(ImageView playerSprite, ImageView objectSprite,  ImageView enemySprite) {
@@ -245,5 +246,19 @@ public class Graphics extends Application {
             return true;
         }
         return false;
+    }
+
+    private void UpdateSessionSettings() {
+        /*
+        Set keys then read configuration JSON
+         */
+        String[] Credentials = {
+                "High_Score",
+                "output_debug",
+                "verbose_log_file",
+                "coloured_output"
+        };
+        Configuration.AddToConfigMap(Credentials);
+        Configuration.ReadConfig();
     }
 }
