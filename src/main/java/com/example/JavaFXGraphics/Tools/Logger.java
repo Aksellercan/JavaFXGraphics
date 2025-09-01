@@ -1,4 +1,4 @@
-package com.example.JavaFXGraphics;
+package com.example.JavaFXGraphics.Tools;
 
 import java.io.File;
 import java.io.FileWriter;

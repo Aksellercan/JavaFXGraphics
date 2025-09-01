@@ -1,4 +1,4 @@
-package com.example.JavaFXGraphics;
+package com.example.JavaFXGraphics.Tools;
 
 /**
  * Sets ANSI Colours for console output

@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics;
 
+import com.example.JavaFXGraphics.Tools.Logger;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
@@ -50,8 +51,11 @@ public class Graphics extends Application {
         maxScoreLabel.setText("Objective Score: " + maxScore);
         scoreLabel.setText("Score: " + score.get());
         ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
+        cImage.setId("leaves.png");
         ImageView bImage = new ImageView(new Image("/Sprites/nether.png"));
+        bImage.setId("nether.png");
         ImageView aImage = new ImageView(new Image("/Sprites/crafter.png"));
+        aImage.setId("crafter.png");
         /*
         Restart button functions
          */
@@ -174,53 +178,52 @@ public class Graphics extends Application {
         CalculateNextPosition(playerSprite);
         CalculateNextPosition(objectSprite);
         CalculateNextPosition(enemySprite);
-        MoveEnemySprite(enemySprite, playerSprite);
+        Thread moveEnemySpriteThread = new Thread(() -> {
+            try {
+                MoveEnemySprite(enemySprite, playerSprite);
+            } catch (InterruptedException e) {
+                Logger.ERROR.LogException(e);
+            }
+        });
+        moveEnemySpriteThread.start();
     }
 
-    private void MoveEnemySprite(ImageView enemy, ImageView sprite) {
+    private void MoveEnemySprite(ImageView enemy, ImageView sprite) throws InterruptedException {
         /*
         get current location of sprite
         if its on same X coordination move down the Y axis
         if its on same Y coordination move down the X axis
         Runs concurrently
         */
-        Thread moveThread = new Thread(() -> {
-            while (continueGame.get()) {
-                if ((sprite.getTranslateX() == enemy.getTranslateX()) && (sprite.getTranslateY() == enemy.getTranslateY())) {
-                    Logger.INFO.Log("Player got caught!");
-                    continueGame.set(false);
-                    break;
-                }
-                try {
-                    Thread.sleep(180);
-                } catch (InterruptedException e) {
-                    Logger.ERROR.LogException(e);
-                    break;
-                }
-                if (!(sprite.getTranslateX() == enemy.getTranslateX()) || !(sprite.getTranslateY() == enemy.getTranslateY())) {
-                    if (sprite.getTranslateY() != enemy.getTranslateY()) {
-                        if (sprite.getTranslateY() < enemy.getTranslateY()) {
-                            Logger.DEBUG.Log("Enemy move up");
-                            enemy.translateYProperty().set(enemy.getTranslateY() - 20);
-                        } else {
-                            Logger.DEBUG.Log("Enemy move down");
-                            enemy.translateYProperty().set(enemy.getTranslateY() + 20);
-                        }
-                        continue;
+        while (continueGame.get()) {
+            if ((sprite.getTranslateX() == enemy.getTranslateX()) && (sprite.getTranslateY() == enemy.getTranslateY())) {
+                Logger.INFO.Log("Player got caught!");
+                continueGame.set(false);
+                break;
+            }
+            Thread.sleep(180);
+            if (!(sprite.getTranslateX() == enemy.getTranslateX()) || !(sprite.getTranslateY() == enemy.getTranslateY())) {
+                if (sprite.getTranslateY() != enemy.getTranslateY()) {
+                    if (sprite.getTranslateY() < enemy.getTranslateY()) {
+                        Logger.DEBUG.Log("Enemy move up");
+                        enemy.translateYProperty().set(enemy.getTranslateY() - 20);
+                    } else {
+                        Logger.DEBUG.Log("Enemy move down");
+                        enemy.translateYProperty().set(enemy.getTranslateY() + 20);
                     }
-                    if (sprite.getTranslateX() != enemy.getTranslateX()) {
-                        if (sprite.getTranslateX() < enemy.getTranslateX()) {
-                            Logger.DEBUG.Log("Enemy move left");
-                            enemy.translateXProperty().set(enemy.getTranslateX() - 20);
-                        } else {
-                            Logger.DEBUG.Log("Enemy move right");
-                            enemy.translateXProperty().set(enemy.getTranslateX() + 20);
-                        }
+                    continue;
+                }
+                if (sprite.getTranslateX() != enemy.getTranslateX()) {
+                    if (sprite.getTranslateX() < enemy.getTranslateX()) {
+                        Logger.DEBUG.Log("Enemy move left");
+                        enemy.translateXProperty().set(enemy.getTranslateX() - 20);
+                    } else {
+                        Logger.DEBUG.Log("Enemy move right");
+                        enemy.translateXProperty().set(enemy.getTranslateX() + 20);
                     }
                 }
             }
-        });
-        moveThread.start();
+        }
     }
 
     private void CalculateNextPosition(ImageView sprite) {
@@ -233,7 +236,7 @@ public class Graphics extends Application {
         } while (!((randX % 20 == 0) && (randY % 20 == 0)));
         sprite.translateXProperty().set(randX);
         sprite.translateYProperty().set(randY);
-        Logger.INFO.Log(sprite + "\n-> X = " + sprite.getTranslateX() + "\n-> Y = " + sprite.getTranslateY());
+        Logger.INFO.Log(sprite.getId() + "\n-> X = " + sprite.getTranslateX() + "\n-> Y = " + sprite.getTranslateY());
     }
 
     private boolean CheckStatus(ImageView cImage, ImageView bImage) {
