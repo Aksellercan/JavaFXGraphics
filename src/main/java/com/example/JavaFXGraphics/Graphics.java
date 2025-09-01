@@ -56,9 +56,7 @@ public class Graphics extends Application {
          */
         retryButton.setOnAction(e -> {
             Logger.DEBUG.Log("Button " + e.toString());
-            continueGame.set(true);
-            RestartGame(cImage, bImage, aImage);
-            score.set(0);
+            StartGame(cImage, bImage, aImage);
             retryButton.visibleProperty().set(false);
             scoreLabel.setText("Score: " + score.get());
             buttonLabel.visibleProperty().set(false);
@@ -69,12 +67,6 @@ public class Graphics extends Application {
         Group newGroup = new Group();
         Scene newScene = new Scene(newGroup, stage.getHeight(), stage.getWidth());
         newScene.setCamera(new PerspectiveCamera());
-        /*
-        Spawn sprites in random locations
-         */
-        CalculateNextPosition(cImage);
-        CalculateNextPosition(bImage);
-        CalculateNextPosition(aImage);
         /*
         Set coordinates
          */
@@ -100,11 +92,7 @@ public class Graphics extends Application {
         /*
         Start game
          */
-        continueGame.set(true);
-        /*
-        Move Enemy Sprite
-         */
-        MoveEnemySprite(aImage, cImage);
+        StartGame(cImage, bImage, aImage);
         /*
         Keypress Event Listener
          */
@@ -176,7 +164,12 @@ public class Graphics extends Application {
         retryButton.visibleProperty().set(true);
     }
 
-    private void RestartGame(ImageView playerSprite, ImageView objectSprite,  ImageView enemySprite) {
+    private void StartGame(ImageView playerSprite, ImageView objectSprite,  ImageView enemySprite) {
+        /*
+        Spawn sprites in random locations
+         */
+        continueGame.set(true);
+        score.set(0);
         CalculateNextPosition(playerSprite);
         CalculateNextPosition(objectSprite);
         CalculateNextPosition(enemySprite);
