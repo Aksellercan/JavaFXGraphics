@@ -33,16 +33,19 @@ public class Graphics extends Application {
         stage.setResizable(false);
         stage.setTitle("JavaFX Graphics Test");
         stage.setOnCloseRequest( e -> {
-            System.out.println("Closing...\n" + e.toString());
+            Logger.INFO.Log("Closing...\n" + e.toString());
             continueGame.set(false);
         });
+        Logger.setVerboseLogFile(false);
+        Logger.setColouredOutput(true);
+        Logger.setDebugOutput(true);
         /*
         Add objects
          */
         buttonLabel.visibleProperty().set(false);
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
-        System.out.println("Button visible: " + retryButton.isVisible());
+        Logger.DEBUG.Log("Button visible: " + retryButton.isVisible());
         maxScoreLabel.setText("Objective Score: " + maxScore);
         scoreLabel.setText("Score: " + score.get());
         ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
@@ -52,8 +55,9 @@ public class Graphics extends Application {
         Restart button functions
          */
         retryButton.setOnAction(e -> {
-            System.out.println("Button " + e.toString());
-            RestartGame(cImage, bImage);
+            Logger.DEBUG.Log("Button " + e.toString());
+            continueGame.set(true);
+            RestartGame(cImage, bImage, aImage);
             score.set(0);
             retryButton.visibleProperty().set(false);
             scoreLabel.setText("Score: " + score.get());
@@ -61,7 +65,6 @@ public class Graphics extends Application {
             scoreLabel.visibleProperty().set(true);
             maxScoreLabel.visibleProperty().set(true);
             stage.setTitle("JavaFX Graphics Test");
-            continueGame.set(true);
         });
         Group newGroup = new Group();
         Scene newScene = new Scene(newGroup, stage.getHeight(), stage.getWidth());
@@ -95,13 +98,18 @@ public class Graphics extends Application {
         newGroup.getChildren().add(bImage);
         stage.setScene(newScene);
         /*
-        Keypress Event Listener
+        Start game
          */
         continueGame.set(true);
         /*
         Move Enemy Sprite
          */
         MoveEnemySprite(aImage, cImage);
+        /*
+        Keypress Event Listener
+         */
+        AtomicInteger count = new AtomicInteger();
+        count.set(0);
         stage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             if (continueGame.get()) {
                 switch (e.getCode()) {
@@ -109,29 +117,29 @@ public class Graphics extends Application {
                     case W:
                         if (!(cImage.getTranslateY() <= 0))
                             cImage.translateYProperty().set(cImage.getTranslateY() - 20);
-                        System.out.println("move up " + e.getText());
+                        Logger.DEBUG.Log("move up " + e.getText());
                         break;
                     case LEFT:
                     case A:
                         if (!(cImage.getTranslateX() <= 0))
                             cImage.translateXProperty().set(cImage.getTranslateX() - 20);
-                        System.out.println("move left " + e.getText());
+                        Logger.DEBUG.Log("move left " + e.getText());
                         break;
                     case RIGHT:
                     case D:
                         if (!(cImage.getTranslateX() >= 980))
                             cImage.translateXProperty().set(cImage.getTranslateX() + 20);
-                        System.out.println("move right " + e.getText());
+                        Logger.DEBUG.Log("move right " + e.getText());
                         break;
                     case DOWN:
                     case S:
                         if (!(cImage.getTranslateY() >= 740))
                             cImage.translateYProperty().set(cImage.getTranslateY() + 20);
-                        System.out.println("move down " + e.getText());
+                        Logger.DEBUG.Log("move down " + e.getText());
                         break;
                 }
-                System.out.println("X axis " + cImage.getTranslateX());
-                System.out.println("Y axis " + cImage.getTranslateY());
+                Logger.DEBUG.Log("X axis " + cImage.getTranslateX());
+                Logger.DEBUG.Log("Y axis " + cImage.getTranslateY());
                 /*
                 Monitor game status and increment score
                  */
@@ -143,10 +151,18 @@ public class Graphics extends Application {
                 }
                 if (score.get() == maxScore) {
                     stage.setTitle("You Won!");
-                    System.out.println("You Won!");
+                    Logger.INFO.Log("You Won!");
                     continueGame.set(false);
                     GameOverScreen();
                 }
+            } else {
+                if (count.get() < 1) {
+                    stage.setTitle("You Lost!");
+                    Logger.INFO.Log("You Lost!");
+                    continueGame.set(false);
+                    GameOverScreen();
+                }
+                count.getAndIncrement();
             }
         });
         stage.show();
@@ -160,8 +176,9 @@ public class Graphics extends Application {
         retryButton.visibleProperty().set(true);
     }
 
-    private void RestartGame(ImageView playerSprite, ImageView enemySprite) {
+    private void RestartGame(ImageView playerSprite, ImageView objectSprite,  ImageView enemySprite) {
         CalculateNextPosition(playerSprite);
+        CalculateNextPosition(objectSprite);
         CalculateNextPosition(enemySprite);
         MoveEnemySprite(enemySprite, playerSprite);
     }
@@ -176,39 +193,37 @@ public class Graphics extends Application {
         Thread moveThread = new Thread(() -> {
             while (continueGame.get()) {
                 if ((sprite.getTranslateX() == enemy.getTranslateX()) && (sprite.getTranslateY() == enemy.getTranslateY())) {
-                    System.out.println("Player got caught!");
+                    Logger.INFO.Log("Player got caught!");
                     continueGame.set(false);
                     break;
                 }
                 try {
-                    Thread.sleep(750);
+                    Thread.sleep(180);
                 } catch (InterruptedException e) {
-                    System.err.println(e);
+                    Logger.ERROR.LogException(e);
                     break;
                 }
                 if (!(sprite.getTranslateX() == enemy.getTranslateX()) || !(sprite.getTranslateY() == enemy.getTranslateY())) {
                     if (sprite.getTranslateY() != enemy.getTranslateY()) {
                         if (sprite.getTranslateY() < enemy.getTranslateY()) {
-                            System.out.println("Enemy move up");
+                            Logger.DEBUG.Log("Enemy move up");
                             enemy.translateYProperty().set(enemy.getTranslateY() - 20);
                         } else {
-                            System.out.println("Enemy move down");
+                            Logger.DEBUG.Log("Enemy move down");
                             enemy.translateYProperty().set(enemy.getTranslateY() + 20);
                         }
                         continue;
                     }
                     if (sprite.getTranslateX() != enemy.getTranslateX()) {
                         if (sprite.getTranslateX() < enemy.getTranslateX()) {
-                            System.out.println("Enemy move left");
+                            Logger.DEBUG.Log("Enemy move left");
                             enemy.translateXProperty().set(enemy.getTranslateX() - 20);
                         } else {
-                            System.out.println("Enemy move right");
+                            Logger.DEBUG.Log("Enemy move right");
                             enemy.translateXProperty().set(enemy.getTranslateX() + 20);
                         }
-                        continue;
                     }
                 }
-                System.out.println("DEBUG");
             }
         });
         moveThread.start();
@@ -224,12 +239,12 @@ public class Graphics extends Application {
         } while (!((randX % 20 == 0) && (randY % 20 == 0)));
         sprite.translateXProperty().set(randX);
         sprite.translateYProperty().set(randY);
-        System.out.println(sprite + "\n-> X = " + sprite.getTranslateX() + "\n-> Y = " + sprite.getTranslateY());
+        Logger.INFO.Log(sprite + "\n-> X = " + sprite.getTranslateX() + "\n-> Y = " + sprite.getTranslateY());
     }
 
     private boolean CheckStatus(ImageView cImage, ImageView bImage) {
         if ((cImage.getTranslateY() == bImage.getTranslateY() && cImage.getTranslateX() == bImage.getTranslateX())) {
-            System.out.println("Next!");
+            Logger.DEBUG.Log("Next!");
             return true;
         }
         return false;
