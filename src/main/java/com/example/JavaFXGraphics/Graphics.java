@@ -19,10 +19,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Graphics extends Application {
     private final AtomicInteger score = new AtomicInteger();
     private final AtomicBoolean continueGame = new AtomicBoolean();
+    private final ImageView[] objectArray = new ImageView[10];
     private final Label buttonLabel = new Label();
     private final Button retryButton = new Button();
     private final Label maxScoreLabel = new Label();
     private final Label scoreLabel = new Label();
+    private int amountToAdd = 10;
     private final AtomicInteger HighScore = new AtomicInteger();
 
     @Override
@@ -51,18 +53,19 @@ public class Graphics extends Application {
         Logger.DEBUG.Log("Button visible: " + retryButton.isVisible());
         maxScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.setText("Score: " + score.get());
-        ImageView cImage = new ImageView(new Image("/Sprites/leaves.png"));
-        cImage.setId("leaves.png");
-        ImageView bImage = new ImageView(new Image("/Sprites/nether.png"));
-        bImage.setId("nether.png");
-        ImageView aImage = new ImageView(new Image("/Sprites/crafter.png"));
-        aImage.setId("crafter.png");
+        ImageView player = new ImageView(new Image("/Sprites/leaves.png"));
+        player.setId("leaves.png");
+        ImageView enemy = new ImageView(new Image("/Sprites/crafter.png"));
+        enemy.setId("crafter.png");
+        Group root = new Group();
         /*
         Restart button functions
          */
         retryButton.setOnAction(e -> {
             Logger.DEBUG.Log("Button " + e.toString());
-            StartGame(cImage, bImage, aImage);
+            CleanField(root);
+            SpawnManyInRandomLocations(amountToAdd, root);
+            StartGame(player, enemy);
             retryButton.visibleProperty().set(false);
             scoreLabel.setText("Score: " + score.get());
             buttonLabel.visibleProperty().set(false);
@@ -72,9 +75,8 @@ public class Graphics extends Application {
             count.set(0);
             Configuration.WriteConfig();
         });
-        Group newGroup = new Group();
-        Scene newScene = new Scene(newGroup, stage.getHeight(), stage.getWidth());
-        newScene.setCamera(new PerspectiveCamera());
+        Scene scene = new Scene(root, stage.getHeight(), stage.getWidth());
+        scene.setCamera(new PerspectiveCamera());
         /*
         Set coordinates
          */
@@ -89,18 +91,18 @@ public class Graphics extends Application {
         /*
         Add children
          */
-        newGroup.getChildren().add(aImage);
-        newGroup.getChildren().add(maxScoreLabel);
-        newGroup.getChildren().add(buttonLabel);
-        newGroup.getChildren().add(retryButton);
-        newGroup.getChildren().add(scoreLabel);
-        newGroup.getChildren().add(cImage);
-        newGroup.getChildren().add(bImage);
-        stage.setScene(newScene);
+        root.getChildren().add(enemy);
+        root.getChildren().add(maxScoreLabel);
+        root.getChildren().add(buttonLabel);
+        root.getChildren().add(retryButton);
+        root.getChildren().add(scoreLabel);
+        root.getChildren().add(player);
+        stage.setScene(scene);
         /*
         Start game
          */
-        StartGame(cImage, bImage, aImage);
+        StartGame(player, enemy);
+        SpawnManyInRandomLocations(amountToAdd, root);
         /*
         Keypress Event Listener
          */
@@ -110,40 +112,35 @@ public class Graphics extends Application {
                 switch (e.getCode()) {
                     case UP:
                     case W:
-                        if (!(cImage.getTranslateY() <= 0))
-                            cImage.translateYProperty().set(cImage.getTranslateY() - 20);
+                        if (!(player.getTranslateY() <= 0))
+                            player.translateYProperty().set(player.getTranslateY() - 20);
                         Logger.DEBUG.Log("move up " + e.getText());
                         break;
                     case LEFT:
                     case A:
-                        if (!(cImage.getTranslateX() <= 0))
-                            cImage.translateXProperty().set(cImage.getTranslateX() - 20);
+                        if (!(player.getTranslateX() <= 0))
+                            player.translateXProperty().set(player.getTranslateX() - 20);
                         Logger.DEBUG.Log("move left " + e.getText());
                         break;
                     case RIGHT:
                     case D:
-                        if (!(cImage.getTranslateX() >= 980))
-                            cImage.translateXProperty().set(cImage.getTranslateX() + 20);
+                        if (!(player.getTranslateX() >= 980))
+                            player.translateXProperty().set(player.getTranslateX() + 20);
                         Logger.DEBUG.Log("move right " + e.getText());
                         break;
                     case DOWN:
                     case S:
-                        if (!(cImage.getTranslateY() >= 740))
-                            cImage.translateYProperty().set(cImage.getTranslateY() + 20);
+                        if (!(player.getTranslateY() >= 740))
+                            player.translateYProperty().set(player.getTranslateY() + 20);
                         Logger.DEBUG.Log("move down " + e.getText());
                         break;
                 }
-                Logger.DEBUG.Log("X axis " + cImage.getTranslateX());
-                Logger.DEBUG.Log("Y axis " + cImage.getTranslateY());
+                Logger.DEBUG.Log("X axis " + player.getTranslateX());
+                Logger.DEBUG.Log("Y axis " + player.getTranslateY());
                 /*
                 Monitor game status and increment score
                  */
-                if (CheckStatus(cImage, bImage)) {
-                    stage.setTitle("Next!");
-                    score.set(score.get()+1);
-                    CalculateNextPosition(bImage);
-                    scoreLabel.setText("Score: " + score.get());
-                }
+                CheckAndRemove(player, root);
             } else {
                 if (count.get() < 1) {
                     if (HighScore.get() < score.get()) {
@@ -160,6 +157,29 @@ public class Graphics extends Application {
         stage.show();
     }
 
+    private void CleanField(Group root) {
+        for (ImageView object : objectArray) {
+            root.getChildren().remove(object);
+        }
+    }
+
+    private void CheckAndRemove(ImageView player, Group root) {
+        for (ImageView object : objectArray) {
+            if ((player.getTranslateY() == object.getTranslateY() && player.getTranslateX() == object.getTranslateX())) {
+                root.getChildren().remove(object);
+                score.getAndIncrement();
+                scoreLabel.setText("Score: " + score.get());
+                amountToAdd--;
+                Logger.INFO.Log("Left on field: " + amountToAdd);
+                break;
+            }
+        }
+        if (amountToAdd == 0) {
+            amountToAdd = 10;
+            SpawnManyInRandomLocations(amountToAdd, root);
+        }
+    }
+
     private void GameOverScreen() {
         maxScoreLabel.visibleProperty().set(false);
         maxScoreLabel.setText("High Score: " + HighScore.get());
@@ -170,14 +190,13 @@ public class Graphics extends Application {
         Configuration.SetHigh_Score(HighScore.get());
     }
 
-    private void StartGame(ImageView playerSprite, ImageView objectSprite,  ImageView enemySprite) {
+    private void StartGame(ImageView playerSprite, ImageView enemySprite) {
         /*
         Spawn sprites in random locations
          */
         continueGame.set(true);
         score.set(0);
         CalculateNextPosition(playerSprite);
-        CalculateNextPosition(objectSprite);
         CalculateNextPosition(enemySprite);
         Thread moveEnemySpriteThread = new Thread(() -> {
             try {
@@ -227,6 +246,16 @@ public class Graphics extends Application {
         }
     }
 
+    private void SpawnManyInRandomLocations(int amount, Group root) {
+        for (int i = 0; i < amount; i++) {
+            ImageView loopable = new ImageView(new Image("Sprites/nether.png"));
+            loopable.setId("nether.png");
+            CalculateNextPosition(loopable);
+            objectArray[i] = loopable;
+            root.getChildren().add(loopable);
+        }
+    }
+
     private void CalculateNextPosition(ImageView sprite) {
         Random rand = new Random();
         int randX;
@@ -237,15 +266,7 @@ public class Graphics extends Application {
         } while (!((randX % 20 == 0) && (randY % 20 == 0)));
         sprite.translateXProperty().set(randX);
         sprite.translateYProperty().set(randY);
-        Logger.INFO.Log(sprite.getId() + "\n-> X = " + sprite.getTranslateX() + "\n-> Y = " + sprite.getTranslateY());
-    }
-
-    private boolean CheckStatus(ImageView cImage, ImageView bImage) {
-        if ((cImage.getTranslateY() == bImage.getTranslateY() && cImage.getTranslateX() == bImage.getTranslateX())) {
-            Logger.DEBUG.Log("Next!");
-            return true;
-        }
-        return false;
+        Logger.INFO.Log(sprite.getId() + ": X = " + sprite.getTranslateX() + ", Y = " + sprite.getTranslateY());
     }
 
     private void UpdateSessionSettings() {
