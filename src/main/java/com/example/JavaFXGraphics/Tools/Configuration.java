@@ -11,9 +11,10 @@ import java.util.regex.Pattern;
 public final class Configuration {
     private static final File folderPath = new File("Config");
     private static final File filePath = new File(folderPath + File.separator + "config.json");
-    private static final Token[] tokenConfig = new Token[5];
+    private static Token[] tokenConfig;
     private static int high_Score;
     private static int amountToAdd = 10;
+    private static boolean disableBot;
 
     private Configuration() {}
 
@@ -30,6 +31,12 @@ public final class Configuration {
     public static void SetAmountToAdd(int setAmountToAdd) {
         amountToAdd = setAmountToAdd;
     }
+    public static boolean GetDisableBot() {
+        return disableBot;
+    }
+    public static void SetDisableBot(boolean setDisableBot) {
+        disableBot = setDisableBot;
+    }
 
     /*
     Interact with these only
@@ -40,6 +47,9 @@ public final class Configuration {
     }
 
     public static void ReadConfigAndMap() {
+        int arraySize = getFileLength();
+        if (arraySize == -1) return;
+        tokenConfig = new Token[arraySize-2];
         ReadConfig();
         MapKeys(false);
     }
@@ -95,6 +105,13 @@ public final class Configuration {
         for (Token token : tokenConfig) {
             Logger.DEBUG.Log("Current: " + token.toString());
             switch (token.getKey().replace("\t", "")) {
+                case "disable_bot":
+                    if (update) {
+                        token.setValue(String.valueOf(GetDisableBot()));
+                        break;
+                    }
+                    SetDisableBot(BooleanParse(token.getValue(), false));
+                    break;
                 case "amount_to_add":
                     if (update) {
                         token.setValue(String.valueOf(GetAmountToAdd()));
@@ -138,9 +155,22 @@ public final class Configuration {
         }
     }
 
+    private static int getFileLength() {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            int fileLength = 0;
+            while (br.readLine() !=null ) {
+                fileLength++;
+            }
+            return fileLength;
+        } catch (Exception e) {
+            Logger.CRITICAL.LogException(e, "Unable to get the length of file");
+            return -1;
+        }
+    }
+
     private static boolean BooleanParse(String value, boolean returnValue) {
         value = value.replace(" ", "");
-        Logger.WARN.Log("value=" + value);
+        Logger.DEBUG.Log("value=" + value);
         if (value.equals("true") || value.equals("false")) {
             return value.equals("true");
         }

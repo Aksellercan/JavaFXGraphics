@@ -214,14 +214,16 @@ public class Graphics extends Application {
         score.set(0);
         CalculateNextPosition(playerSprite);
         CalculateNextPosition(enemySprite);
-        Thread moveEnemySpriteThread = new Thread(() -> {
-            try {
-                MoveEnemySprite(enemySprite, playerSprite);
-            } catch (InterruptedException e) {
-                Logger.ERROR.LogException(e);
-            }
-        });
-        moveEnemySpriteThread.start();
+        if (!Configuration.GetDisableBot()) {
+            Thread moveEnemySpriteThread = new Thread(() -> {
+                try {
+                    MoveEnemySprite(enemySprite, playerSprite);
+                } catch (InterruptedException e) {
+                    Logger.ERROR.LogException(e);
+                }
+            });
+            moveEnemySpriteThread.start();
+        }
     }
 
     private void MoveEnemySprite(ImageView enemy, ImageView sprite) throws InterruptedException {
