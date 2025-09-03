@@ -19,12 +19,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Graphics extends Application {
     private final AtomicInteger score = new AtomicInteger();
     private final AtomicBoolean continueGame = new AtomicBoolean();
-    private final ImageView[] objectArray = new ImageView[10];
+    private ImageView[] objectArray;
     private final Label buttonLabel = new Label();
     private final Button retryButton = new Button();
-    private final Label maxScoreLabel = new Label();
+    private final Label highScoreLabel = new Label();
+    private final Label numberOfBlocksOnFieldLabel = new Label();
     private final Label scoreLabel = new Label();
-    private int amountToAdd = 10;
+    private int amountToAdd;
     private final AtomicInteger HighScore = new AtomicInteger();
 
     @Override
@@ -37,12 +38,15 @@ public class Graphics extends Application {
         stage.setResizable(false);
         stage.setTitle("JavaFX Graphics Test");
         stage.setOnCloseRequest( e -> {
-            Logger.INFO.Log("Closing...\n" + e.toString());
+            Logger.INFO.Log("Closing... Reason: " + e.getEventType());
             continueGame.set(false);
-            Configuration.WriteConfig();
+            Configuration.MapAndWriteConfig();
         });
+        Logger.INFO.Log("Started...");
         UpdateSessionSettings();
         HighScore.set(Configuration.GetHigh_Score());
+        amountToAdd = Configuration.GetAmountToAdd();
+        objectArray = new ImageView[amountToAdd];
         /*
         Add objects
          */
@@ -51,8 +55,10 @@ public class Graphics extends Application {
         retryButton.setText("Restart");
         retryButton.visibleProperty().set(false);
         Logger.DEBUG.Log("Button visible: " + retryButton.isVisible());
-        maxScoreLabel.setText("High Score: " + HighScore.get());
+        highScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.setText("Score: " + score.get());
+        numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
+        numberOfBlocksOnFieldLabel.visibleProperty().set(true);
         ImageView player = new ImageView(new Image("/Sprites/leaves.png"));
         player.setId("leaves.png");
         ImageView enemy = new ImageView(new Image("/Sprites/crafter.png"));
@@ -68,20 +74,23 @@ public class Graphics extends Application {
             StartGame(player, enemy);
             retryButton.visibleProperty().set(false);
             scoreLabel.setText("Score: " + score.get());
+            numberOfBlocksOnFieldLabel.visibleProperty().set(false);
             buttonLabel.visibleProperty().set(false);
             scoreLabel.visibleProperty().set(true);
-            maxScoreLabel.visibleProperty().set(true);
+            highScoreLabel.visibleProperty().set(true);
             stage.setTitle("JavaFX Graphics Test");
             count.set(0);
-            Configuration.WriteConfig();
+            Configuration.MapAndWriteConfig();
         });
         Scene scene = new Scene(root, stage.getHeight(), stage.getWidth());
         scene.setCamera(new PerspectiveCamera());
         /*
         Set coordinates
          */
-        maxScoreLabel.translateXProperty().set(760);
-        maxScoreLabel.translateYProperty().set(740);
+        numberOfBlocksOnFieldLabel.translateXProperty().set(600);
+        numberOfBlocksOnFieldLabel.translateYProperty().set(740);
+        highScoreLabel.translateXProperty().set(760);
+        highScoreLabel.translateYProperty().set(740);
         scoreLabel.translateXProperty().set(920);
         scoreLabel.translateYProperty().set(740);
         buttonLabel.translateXProperty().set(470);
@@ -92,7 +101,8 @@ public class Graphics extends Application {
         Add children
          */
         root.getChildren().add(enemy);
-        root.getChildren().add(maxScoreLabel);
+        root.getChildren().add(numberOfBlocksOnFieldLabel);
+        root.getChildren().add(highScoreLabel);
         root.getChildren().add(buttonLabel);
         root.getChildren().add(retryButton);
         root.getChildren().add(scoreLabel);
@@ -164,25 +174,31 @@ public class Graphics extends Application {
     }
 
     private void CheckAndRemove(ImageView player, Group root) {
-        for (ImageView object : objectArray) {
+        if (amountToAdd == 0) {
+            amountToAdd = Configuration.GetAmountToAdd();
+            SpawnManyInRandomLocations(amountToAdd, root);
+        }
+        for (int i = 0; i < objectArray.length; i++){
+            if (objectArray[i] == null) continue;
+            ImageView object = objectArray[i];
             if ((player.getTranslateY() == object.getTranslateY() && player.getTranslateX() == object.getTranslateX())) {
+                Logger.DEBUG.Log("\nPlayer Location: X " + player.getTranslateX() + " Y " + player.getTranslateY() + ".\nObject Location: X " + object.getTranslateX() + " Y " + object.getTranslateY());
                 root.getChildren().remove(object);
+                objectArray[i] = null;
+                Logger.DEBUG.Log("Removed: " + object.getId() + ", amount left on field: " + amountToAdd);
                 score.getAndIncrement();
                 scoreLabel.setText("Score: " + score.get());
                 amountToAdd--;
-                Logger.INFO.Log("Left on field: " + amountToAdd);
+                numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
+                Logger.DEBUG.Log("Left on field: " + amountToAdd);
                 break;
             }
-        }
-        if (amountToAdd == 0) {
-            amountToAdd = 10;
-            SpawnManyInRandomLocations(amountToAdd, root);
         }
     }
 
     private void GameOverScreen() {
-        maxScoreLabel.visibleProperty().set(false);
-        maxScoreLabel.setText("High Score: " + HighScore.get());
+        highScoreLabel.visibleProperty().set(false);
+        highScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.visibleProperty().set(false);
         buttonLabel.visibleProperty().set(true);
         buttonLabel.setText("Score: " + score.get());
@@ -249,7 +265,7 @@ public class Graphics extends Application {
     private void SpawnManyInRandomLocations(int amount, Group root) {
         for (int i = 0; i < amount; i++) {
             ImageView loopable = new ImageView(new Image("Sprites/nether.png"));
-            loopable.setId("nether.png");
+            loopable.setId("nether" + i + ".png");
             CalculateNextPosition(loopable);
             objectArray[i] = loopable;
             root.getChildren().add(loopable);
@@ -270,16 +286,6 @@ public class Graphics extends Application {
     }
 
     private void UpdateSessionSettings() {
-        /*
-        Set keys then read configuration JSON
-         */
-        String[] Credentials = {
-                "High_Score",
-                "output_debug",
-                "verbose_log_file",
-                "coloured_output"
-        };
-        Configuration.AddToConfigMap(Credentials);
-        Configuration.ReadConfig();
+        Configuration.ReadConfigAndMap();
     }
 }
