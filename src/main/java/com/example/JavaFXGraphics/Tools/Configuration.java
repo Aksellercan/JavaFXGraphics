@@ -16,6 +16,20 @@ public final class Configuration {
 
     private Configuration() {}
 
+    private static void LoadKeys() {
+        String[] keys = {
+                "disable_bot",
+                "amount_to_add",
+                "high_score",
+                "output_debug",
+                "verbose_log_file",
+                "coloured_output"
+        };
+        for (int i = 0; i < tokenConfig.length; i++) {
+            tokenConfig[i] = new Token(keys[i], "");
+        }
+    }
+
     /*
     Interact with these only
      */
@@ -26,10 +40,14 @@ public final class Configuration {
 
     public static void ReadConfigAndMap() {
         int arraySize = getFileLength();
-        if (arraySize == -1) return;
-        tokenConfig = new Token[arraySize-2];
+        if (arraySize == -1 || arraySize == 0) {
+            tokenConfig = new Token[6];
+        } else {
+            tokenConfig = new Token[arraySize-2];
+        }
+        LoadKeys();
         ReadConfig();
-        MapKeys(false);
+        MapKeys(arraySize == -1 || arraySize == 0);
     }
 
     private static void MkDirs()  {
