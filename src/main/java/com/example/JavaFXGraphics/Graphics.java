@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics;
 
+import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Tools.Configuration;
 import com.example.JavaFXGraphics.Tools.Logger;
 import javafx.application.Application;
@@ -44,23 +45,21 @@ public class Graphics extends Application {
         });
         Logger.INFO.Log("Started...");
         UpdateSessionSettings();
-        HighScore.set(Configuration.GetHigh_Score());
-        amountToAdd = Configuration.GetAmountToAdd();
+        HighScore.set(Player.getHighScore());
+        amountToAdd = Player.getAmountToAdd();
         objectArray = new ImageView[amountToAdd];
+        /*
+        Create object
+         */
+        Player.setSprite(new ImageView(new Image("/Sprites/leaves.png")));
         /*
         Add objects
          */
         AtomicInteger count = new AtomicInteger();
-        buttonLabel.visibleProperty().set(false);
         retryButton.setText("Restart");
-        retryButton.visibleProperty().set(false);
-        Logger.DEBUG.Log("Button visible: " + retryButton.isVisible());
         highScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.setText("Score: " + score.get());
         numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
-        numberOfBlocksOnFieldLabel.visibleProperty().set(true);
-        ImageView player = new ImageView(new Image("/Sprites/leaves.png"));
-        player.setId("leaves.png");
         ImageView enemy = new ImageView(new Image("/Sprites/crafter.png"));
         enemy.setId("crafter.png");
         Group root = new Group();
@@ -69,15 +68,11 @@ public class Graphics extends Application {
          */
         retryButton.setOnAction(e -> {
             Logger.DEBUG.Log("Button " + e.toString());
+            GameHUD(root);
             CleanField(root);
             SpawnManyInRandomLocations(amountToAdd, root);
-            StartGame(player, enemy);
-            retryButton.visibleProperty().set(false);
+            StartGame(Player.getSprite(), enemy);
             scoreLabel.setText("Score: " + score.get());
-            numberOfBlocksOnFieldLabel.visibleProperty().set(false);
-            buttonLabel.visibleProperty().set(false);
-            scoreLabel.visibleProperty().set(true);
-            highScoreLabel.visibleProperty().set(true);
             stage.setTitle("JavaFX Graphics Test");
             count.set(0);
             Configuration.MapAndWriteConfig();
@@ -87,9 +82,9 @@ public class Graphics extends Application {
         /*
         Set coordinates
          */
-        numberOfBlocksOnFieldLabel.translateXProperty().set(600);
+        numberOfBlocksOnFieldLabel.translateXProperty().set(680);
         numberOfBlocksOnFieldLabel.translateYProperty().set(740);
-        highScoreLabel.translateXProperty().set(760);
+        highScoreLabel.translateXProperty().set(780);
         highScoreLabel.translateYProperty().set(740);
         scoreLabel.translateXProperty().set(920);
         scoreLabel.translateYProperty().set(740);
@@ -100,18 +95,14 @@ public class Graphics extends Application {
         /*
         Add children
          */
-        root.getChildren().add(enemy);
-        root.getChildren().add(numberOfBlocksOnFieldLabel);
-        root.getChildren().add(highScoreLabel);
-        root.getChildren().add(buttonLabel);
-        root.getChildren().add(retryButton);
-        root.getChildren().add(scoreLabel);
-        root.getChildren().add(player);
+        if (!Player.getDisableBot()) root.getChildren().add(enemy);
+        GameHUD(root);
+        root.getChildren().add(Player.getSprite());
         stage.setScene(scene);
         /*
         Start game
          */
-        StartGame(player, enemy);
+        StartGame(Player.getSprite(), enemy);
         SpawnManyInRandomLocations(amountToAdd, root);
         /*
         Keypress Event Listener
@@ -122,35 +113,35 @@ public class Graphics extends Application {
                 switch (e.getCode()) {
                     case UP:
                     case W:
-                        if (!(player.getTranslateY() <= 0))
-                            player.translateYProperty().set(player.getTranslateY() - 20);
+                        if (!(Player.getSprite().getTranslateY() <= 0))
+                            Player.getSprite().translateYProperty().set(Player.getSprite().getTranslateY() - 20);
                         Logger.DEBUG.Log("move up " + e.getText());
                         break;
                     case LEFT:
                     case A:
-                        if (!(player.getTranslateX() <= 0))
-                            player.translateXProperty().set(player.getTranslateX() - 20);
+                        if (!(Player.getSprite().getTranslateX() <= 0))
+                            Player.getSprite().translateXProperty().set(Player.getSprite().getTranslateX() - 20);
                         Logger.DEBUG.Log("move left " + e.getText());
                         break;
                     case RIGHT:
                     case D:
-                        if (!(player.getTranslateX() >= 980))
-                            player.translateXProperty().set(player.getTranslateX() + 20);
+                        if (!(Player.getSprite().getTranslateX() >= 980))
+                            Player.getSprite().translateXProperty().set(Player.getSprite().getTranslateX() + 20);
                         Logger.DEBUG.Log("move right " + e.getText());
                         break;
                     case DOWN:
                     case S:
-                        if (!(player.getTranslateY() >= 740))
-                            player.translateYProperty().set(player.getTranslateY() + 20);
+                        if (!(Player.getSprite().getTranslateY() >= 740))
+                            Player.getSprite().translateYProperty().set(Player.getSprite().getTranslateY() + 20);
                         Logger.DEBUG.Log("move down " + e.getText());
                         break;
                 }
-                Logger.DEBUG.Log("X axis " + player.getTranslateX());
-                Logger.DEBUG.Log("Y axis " + player.getTranslateY());
+                Logger.DEBUG.Log("X axis " + Player.getSprite().getTranslateX());
+                Logger.DEBUG.Log("Y axis " + Player.getSprite().getTranslateY());
                 /*
                 Monitor game status and increment score
                  */
-                CheckAndRemove(player, root);
+                CheckAndRemove(Player.getSprite(), root);
             } else {
                 if (count.get() < 1) {
                     if (HighScore.get() < score.get()) {
@@ -159,7 +150,7 @@ public class Graphics extends Application {
                     stage.setTitle("Game Over!");
                     Logger.INFO.Log("Game Over!");
                     continueGame.set(false);
-                    GameOverScreen();
+                    GameOverScreen(root);
                 }
                 count.getAndIncrement();
             }
@@ -175,7 +166,7 @@ public class Graphics extends Application {
 
     private void CheckAndRemove(ImageView player, Group root) {
         if (amountToAdd == 0) {
-            amountToAdd = Configuration.GetAmountToAdd();
+            amountToAdd = Player.getAmountToAdd();
             SpawnManyInRandomLocations(amountToAdd, root);
         }
         for (int i = 0; i < objectArray.length; i++){
@@ -196,14 +187,22 @@ public class Graphics extends Application {
         }
     }
 
-    private void GameOverScreen() {
-        highScoreLabel.visibleProperty().set(false);
-        highScoreLabel.setText("High Score: " + HighScore.get());
-        scoreLabel.visibleProperty().set(false);
-        buttonLabel.visibleProperty().set(true);
+    private void GameHUD(Group root) {
+        root.getChildren().add(numberOfBlocksOnFieldLabel);
+        root.getChildren().add(highScoreLabel);
+        root.getChildren().add(scoreLabel);
+        root.getChildren().remove(buttonLabel);
+        root.getChildren().remove(retryButton);
+    }
+
+    private void GameOverScreen(Group root) {
+        root.getChildren().remove(numberOfBlocksOnFieldLabel);
+        root.getChildren().remove(highScoreLabel);
+        root.getChildren().remove(scoreLabel);
+        root.getChildren().add(buttonLabel);
+        root.getChildren().add(retryButton);
         buttonLabel.setText("Score: " + score.get());
-        retryButton.visibleProperty().set(true);
-        Configuration.SetHigh_Score(HighScore.get());
+        Player.setHighScore(HighScore.get());
     }
 
     private void StartGame(ImageView playerSprite, ImageView enemySprite) {
@@ -214,7 +213,7 @@ public class Graphics extends Application {
         score.set(0);
         CalculateNextPosition(playerSprite);
         CalculateNextPosition(enemySprite);
-        if (!Configuration.GetDisableBot()) {
+        if (!Player.getDisableBot()) {
             Thread moveEnemySpriteThread = new Thread(() -> {
                 try {
                     MoveEnemySprite(enemySprite, playerSprite);

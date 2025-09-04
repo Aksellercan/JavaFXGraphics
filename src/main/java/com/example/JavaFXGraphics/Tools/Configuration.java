@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics.Tools;
 
+import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Objects.Token;
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,31 +13,8 @@ public final class Configuration {
     private static final File folderPath = new File("Config");
     private static final File filePath = new File(folderPath + File.separator + "config.json");
     private static Token[] tokenConfig;
-    private static int high_Score;
-    private static int amountToAdd = 10;
-    private static boolean disableBot;
 
     private Configuration() {}
-
-    //TODO Move these to player class
-    public static int GetHigh_Score() {
-        return high_Score;
-    }
-    public static void SetHigh_Score(int set_high_Score) {
-        high_Score = set_high_Score;
-    }
-    public static int GetAmountToAdd() {
-        return amountToAdd;
-    }
-    public static void SetAmountToAdd(int setAmountToAdd) {
-        amountToAdd = setAmountToAdd;
-    }
-    public static boolean GetDisableBot() {
-        return disableBot;
-    }
-    public static void SetDisableBot(boolean setDisableBot) {
-        disableBot = setDisableBot;
-    }
 
     /*
     Interact with these only
@@ -93,9 +71,11 @@ public final class Configuration {
 
     private static String PrintCorrectType(Token current) {
         if (current.getIsNumber() || current.getIsBoolean()) {
-            return "\t\"" + current.getKey() + "\"" + ": " + current.getValue();
+            // 2 spaces instead of tabs
+            return "  \"" + current.getKey() + "\"" + ": " + current.getValue();
         }
-        return "\t\"" + current.getKey() + "\"" + ": \"" + current.getValue() + "\"";
+        // 2 spaces instead of tabs
+        return "  \"" + current.getKey() + "\"" + ": \"" + current.getValue() + "\"";
     }
 
     /*
@@ -107,28 +87,28 @@ public final class Configuration {
             switch (token.getKey().replace("\t", "")) {
                 case "disable_bot":
                     if (update) {
-                        token.setValue(String.valueOf(GetDisableBot()));
+                        token.setValue(String.valueOf(Player.getDisableBot()));
                         break;
                     }
-                    SetDisableBot(BooleanParse(token.getValue(), false));
+                    Player.setDisableBot(BooleanParse(token.getValue(), false));
                     break;
                 case "amount_to_add":
                     if (update) {
-                        token.setValue(String.valueOf(GetAmountToAdd()));
+                        token.setValue(String.valueOf(Player.getAmountToAdd()));
                         break;
                     }
                     if (Integer.parseInt(token.getValue()) == 0) {
-                        SetAmountToAdd(GetAmountToAdd());
+                        Player.setAmountToAdd(Player.getAmountToAdd());
                         break;
                     }
-                    SetAmountToAdd(Integer.parseInt(token.getValue()));
+                    Player.setAmountToAdd(Integer.parseInt(token.getValue()));
                     break;
                 case "high_score":
                     if (update) {
-                        token.setValue(String.valueOf(GetHigh_Score()));
+                        token.setValue(String.valueOf(Player.getHighScore()));
                         break;
                     }
-                    SetHigh_Score(Integer.parseInt(token.getValue()));
+                    Player.setHighScore(Integer.parseInt(token.getValue()));
                     break;
                 case "output_debug":
                     if (update) {
@@ -136,6 +116,13 @@ public final class Configuration {
                         break;
                     }
                     Logger.setDebugOutput(BooleanParse(token.getValue(), false));
+                    break;
+                case "show_ui":
+                    if (update) {
+                        token.setValue(String.valueOf(Logger.getDebugOutput()));
+                        break;
+                    }
+                    Logger.setDebugOutput(BooleanParse(token.getValue(), true));
                     break;
                 case "verbose_log_file":
                     if (update) {
@@ -243,14 +230,11 @@ public final class Configuration {
 
     private static Token TokenTypeCheck(Token current) {
         if (CheckBoolean(current.getValue())) {
-            Logger.DEBUG.Log("Inside true/false check");
             current.setBoolean(true);
-            Logger.DEBUG.Log("Is boolean? " + current.getIsBoolean());
         }
         Pattern pattern= Pattern.compile("[0-9]");
         Matcher matcher = pattern.matcher(current.getValue());
         if (matcher.find()) {
-            Logger.DEBUG.Log("Inside number check");
             current.setNumber(true);
         }
         Logger.DEBUG.Log("isBoolean is " + current.getIsBoolean() + " isNumber is " + current.getIsNumber());
