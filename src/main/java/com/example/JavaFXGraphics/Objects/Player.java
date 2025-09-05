@@ -7,6 +7,7 @@ public final class Player {
     private static int highScore = 0;
     private static int amountToAdd = 10;
     private static boolean disableBot = false;
+    private static boolean showIU = true;
 
     private Player() {}
 
@@ -26,6 +27,10 @@ public final class Player {
         return disableBot;
     }
 
+    public static boolean getShowUI() {
+        return showIU;
+    }
+
     public static void setSprite(ImageView newSprite) {
         sprite = newSprite;
         sprite.setId("Player");
@@ -41,5 +46,9 @@ public final class Player {
 
     public static void setDisableBot(boolean newDisableBot) {
         disableBot = newDisableBot;
+    }
+
+    public static void setShowIU(boolean newShowUI) {
+        showIU = newShowUI;
     }
 }

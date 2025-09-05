@@ -23,7 +23,8 @@ public final class Configuration {
                 "high_score",
                 "output_debug",
                 "verbose_log_file",
-                "coloured_output"
+                "coloured_output",
+                "show_ui"
         };
         for (int i = 0; i < tokenConfig.length; i++) {
             tokenConfig[i] = new Token(keys[i], "");
@@ -137,10 +138,10 @@ public final class Configuration {
                     break;
                 case "show_ui":
                     if (update) {
-                        token.setValue(String.valueOf(Logger.getDebugOutput()));
+                        token.setValue(String.valueOf(Player.getShowUI()));
                         break;
                     }
-                    Logger.setDebugOutput(BooleanParse(token.getValue(), true));
+                    Player.setShowIU(BooleanParse(token.getValue(), true));
                     break;
                 case "verbose_log_file":
                     if (update) {
@@ -250,7 +251,7 @@ public final class Configuration {
         if (CheckBoolean(current.getValue())) {
             current.setBoolean(true);
         }
-        Pattern pattern= Pattern.compile("[0-9]");
+        Pattern pattern= Pattern.compile("^\\d+$");
         Matcher matcher = pattern.matcher(current.getValue());
         if (matcher.find()) {
             current.setNumber(true);
