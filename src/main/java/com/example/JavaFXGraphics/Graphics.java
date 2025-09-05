@@ -188,17 +188,21 @@ public class Graphics extends Application {
     }
 
     private void GameHUD(Group root) {
-        root.getChildren().add(numberOfBlocksOnFieldLabel);
-        root.getChildren().add(highScoreLabel);
-        root.getChildren().add(scoreLabel);
+        if (Player.getShowUI()) {
+            root.getChildren().add(numberOfBlocksOnFieldLabel);
+            root.getChildren().add(highScoreLabel);
+            root.getChildren().add(scoreLabel);
+        }
         root.getChildren().remove(buttonLabel);
         root.getChildren().remove(retryButton);
     }
 
     private void GameOverScreen(Group root) {
-        root.getChildren().remove(numberOfBlocksOnFieldLabel);
-        root.getChildren().remove(highScoreLabel);
-        root.getChildren().remove(scoreLabel);
+        if (Player.getShowUI()) {
+            root.getChildren().remove(numberOfBlocksOnFieldLabel);
+            root.getChildren().remove(highScoreLabel);
+            root.getChildren().remove(scoreLabel);
+        }
         root.getChildren().add(buttonLabel);
         root.getChildren().add(retryButton);
         buttonLabel.setText("Score: " + score.get());
