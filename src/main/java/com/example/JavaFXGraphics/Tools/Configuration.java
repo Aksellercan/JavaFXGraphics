@@ -42,7 +42,7 @@ public final class Configuration {
     public static void ReadConfigAndMap() {
         int arraySize = getFileLength();
         if (arraySize == -1 || arraySize == 0) {
-            tokenConfig = new Token[6];
+            tokenConfig = new Token[7];
         } else {
             tokenConfig = new Token[arraySize-2];
         }
@@ -101,61 +101,62 @@ public final class Configuration {
     Add new entries here
      */
     private static void MapKeys(boolean update) {
-        for (Token token : tokenConfig) {
-            Logger.DEBUG.Log("Current: " + token.toString());
-            switch (token.getKey().replace("\t", "")) {
+        for (int i = 0; i < tokenConfig.length; i++) {
+            tokenConfig[i] = TokenTypeCheck(tokenConfig[i]);
+            Logger.DEBUG.Log("Current: " + tokenConfig[i].toString());
+            switch (tokenConfig[i].getKey().replace("\t", "")) {
                 case "disable_bot":
                     if (update) {
-                        token.setValue(String.valueOf(Player.getDisableBot()));
+                        tokenConfig[i].setValue(String.valueOf(Player.getDisableBot()));
                         break;
                     }
-                    Player.setDisableBot(BooleanParse(token.getValue(), false));
+                    Player.setDisableBot(BooleanParse(tokenConfig[i].getValue(), false));
                     break;
                 case "amount_to_add":
                     if (update) {
-                        token.setValue(String.valueOf(Player.getAmountToAdd()));
+                        tokenConfig[i].setValue(String.valueOf(Player.getAmountToAdd()));
                         break;
                     }
-                    if (Integer.parseInt(token.getValue()) == 0) {
+                    if (Integer.parseInt(tokenConfig[i].getValue()) == 0) {
                         Player.setAmountToAdd(Player.getAmountToAdd());
                         break;
                     }
-                    Player.setAmountToAdd(Integer.parseInt(token.getValue()));
+                    Player.setAmountToAdd(Integer.parseInt(tokenConfig[i].getValue()));
                     break;
                 case "high_score":
                     if (update) {
-                        token.setValue(String.valueOf(Player.getHighScore()));
+                        tokenConfig[i].setValue(String.valueOf(Player.getHighScore()));
                         break;
                     }
-                    Player.setHighScore(Integer.parseInt(token.getValue()));
+                    Player.setHighScore(Integer.parseInt(tokenConfig[i].getValue()));
                     break;
                 case "output_debug":
                     if (update) {
-                        token.setValue(String.valueOf(Logger.getDebugOutput()));
+                        tokenConfig[i].setValue(String.valueOf(Logger.getDebugOutput()));
                         break;
                     }
-                    Logger.setDebugOutput(BooleanParse(token.getValue(), false));
+                    Logger.setDebugOutput(BooleanParse(tokenConfig[i].getValue(), false));
                     break;
                 case "show_ui":
                     if (update) {
-                        token.setValue(String.valueOf(Player.getShowUI()));
+                        tokenConfig[i].setValue(String.valueOf(Player.getShowUI()));
                         break;
                     }
-                    Player.setShowIU(BooleanParse(token.getValue(), true));
+                    Player.setShowIU(BooleanParse(tokenConfig[i].getValue(), true));
                     break;
                 case "verbose_log_file":
                     if (update) {
-                        token.setValue(String.valueOf(Logger.getVerboseLogFile()));
+                        tokenConfig[i].setValue(String.valueOf(Logger.getVerboseLogFile()));
                         break;
                     }
-                    Logger.setVerboseLogFile(BooleanParse(token.getValue(), false));
+                    Logger.setVerboseLogFile(BooleanParse(tokenConfig[i].getValue(), false));
                     break;
                 case "coloured_output":
                     if (update) {
-                        token.setValue(String.valueOf(Logger.getColouredOutput()));
+                        tokenConfig[i].setValue(String.valueOf(Logger.getColouredOutput()));
                         break;
                     }
-                    Logger.setColouredOutput(BooleanParse(token.getValue(), false));
+                    Logger.setColouredOutput(BooleanParse(tokenConfig[i].getValue(), false));
                     break;
             }
         }
