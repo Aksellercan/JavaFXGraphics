@@ -1,4 +1,4 @@
-package com.example.JavaFXGraphics.Tools;
+package com.example.JavaFXGraphics.Tools.Logger;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -152,6 +152,9 @@ public enum Logger {
             switch (this) {
                 case WARN:
                     System.out.println(ConsoleColours.YELLOW + fullMessage + ConsoleColours.RESET);
+                    break;
+                case DEBUG:
+                    System.out.println(ConsoleColours.BLUE + fullMessage + ConsoleColours.RESET);
                     break;
                 case ERROR:
                 case CRITICAL:

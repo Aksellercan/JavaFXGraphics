@@ -1,9 +1,9 @@
-package com.example.JavaFXGraphics;
+package com.example.JavaFXGraphics.Tools.Graphics;
 
 import com.example.JavaFXGraphics.Objects.Enemy;
 import com.example.JavaFXGraphics.Objects.Player;
-import com.example.JavaFXGraphics.Tools.Configuration;
-import com.example.JavaFXGraphics.Tools.Logger;
+import com.example.JavaFXGraphics.Tools.Files.JSONParser;
+import com.example.JavaFXGraphics.Tools.Logger.Logger;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.PerspectiveCamera;
@@ -42,7 +42,7 @@ public class Graphics extends Application {
         stage.setOnCloseRequest( e -> {
             Logger.INFO.Log("Closing... Reason: " + e.getEventType());
             continueGame.set(false);
-            Configuration.MapAndWriteConfig();
+            JSONParser.MapAndWriteConfig();
         });
         Logger.INFO.Log("Started...");
         UpdateSessionSettings();
@@ -76,7 +76,7 @@ public class Graphics extends Application {
             scoreLabel.setText("Score: " + score.get());
             stage.setTitle("JavaFX Graphics Test");
             count.set(0);
-            Configuration.MapAndWriteConfig();
+            JSONParser.MapAndWriteConfig();
         });
         Scene scene = new Scene(root, stage.getHeight(), stage.getWidth());
         scene.setCamera(new PerspectiveCamera());
@@ -293,6 +293,6 @@ public class Graphics extends Application {
     }
 
     private void UpdateSessionSettings() {
-        Configuration.ReadConfigAndMap();
+        JSONParser.ReadConfigAndMap();
     }
 }
