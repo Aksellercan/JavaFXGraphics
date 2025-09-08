@@ -31,6 +31,7 @@ abstract class Configuration {
                 "high_score",
                 "output_debug",
                 "verbose_log_file",
+                "player_name",
                 "coloured_output",
                 "show_ui",
                 "enemy_speed"
@@ -57,6 +58,13 @@ abstract class Configuration {
     protected static void MapKeys(boolean update) {
         for (Token token : tokenConfig) {
             switch (token.getKey().replace("\t", "")) {
+                case "player_name":
+                    if (update) {
+                        token.setValue(Player.getName());
+                        break;
+                    }
+                    Player.setName(token.getValue());
+                    break;
                 case "disable_bot":
                     if (update) {
                         token.setValue(String.valueOf(Enemy.getDisableBot()));

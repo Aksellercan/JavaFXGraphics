@@ -1,10 +1,13 @@
 package com.example.JavaFXGraphics.Objects;
 
+import com.example.JavaFXGraphics.Tools.Logger.Logger;
+
 public class Token {
     private String key;
     private String value;
     private boolean isNumber;
     private boolean isBoolean;
+    private Token[] innerArray;
 
     public Token(String key, String value) {
         this.key = key;
@@ -18,6 +21,10 @@ public class Token {
 
     public String getValue() {
         return this.value;
+    }
+
+    public Token[] getInnerArray() {
+        return this.innerArray;
     }
 
     public boolean getIsNumber() {
@@ -41,6 +48,18 @@ public class Token {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setInnerArray(Token[] innerArray) {
+        this.innerArray = innerArray;
+    }
+
+    public void addTokenToInnerArray(Token newInnerToken) {
+        if (innerArray.length == 0) {
+            Logger.ERROR.Log("Inner array not initialized");
+            return;
+        }
+        innerArray[innerArray.length-1] = newInnerToken;
     }
 
     public void setBoolean(boolean isBoolean) {

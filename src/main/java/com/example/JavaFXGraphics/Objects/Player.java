@@ -3,12 +3,22 @@ package com.example.JavaFXGraphics.Objects;
 import javafx.scene.image.ImageView;
 
 public final class Player {
+    private static String name = "default";
     private static ImageView sprite;
+    private static int score = 0;
     private static int highScore = 0;
     private static int amountToAdd = 10;
     private static boolean showIU = true;
 
     private Player() {}
+
+    public static String getName() {
+        return name;
+    }
+
+    public static int getScore() {
+        return score;
+    }
 
     public static ImageView getSprite() {
         return sprite;
@@ -24,6 +34,14 @@ public final class Player {
 
     public static boolean getShowUI() {
         return showIU;
+    }
+
+    public static void setName(String newName) {
+        name = newName;
+    }
+
+    public static void setScore(int newScore) {
+        score = newScore;
     }
 
     public static void setSprite(ImageView newSprite) {

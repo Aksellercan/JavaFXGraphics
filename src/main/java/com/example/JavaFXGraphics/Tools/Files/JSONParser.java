@@ -167,7 +167,11 @@ public final class JSONParser extends Configuration {
             valueMutable.append(key.charAt(i));
         }
         StringBuilder keyMutable = new StringBuilder();
+        boolean openQuotes = false;
         for (int i = 0; i < value.length(); i++) {
+//            if (value.charAt(i) == '"') {
+//                openQuotes = !openQuotes;
+//            }
             if (value.charAt(i) == '"' || value.charAt(i) == ',') {
                 continue;
             }
