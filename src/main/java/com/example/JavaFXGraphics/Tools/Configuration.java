@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics.Tools;
 
+import com.example.JavaFXGraphics.Objects.Enemy;
 import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Objects.Token;
 import java.io.BufferedReader;
@@ -24,7 +25,8 @@ public final class Configuration {
                 "output_debug",
                 "verbose_log_file",
                 "coloured_output",
-                "show_ui"
+                "show_ui",
+                "enemy_speed"
         };
         for (int i = 0; i < tokenConfig.length; i++) {
             tokenConfig[i] = new Token(keys[i], "");
@@ -42,7 +44,7 @@ public final class Configuration {
     public static void ReadConfigAndMap() {
         int arraySize = getFileLength();
         if (arraySize == -1 || arraySize == 0) {
-            tokenConfig = new Token[7];
+            tokenConfig = new Token[8];
         } else {
             tokenConfig = new Token[arraySize-2];
         }
@@ -107,10 +109,17 @@ public final class Configuration {
             switch (tokenConfig[i].getKey().replace("\t", "")) {
                 case "disable_bot":
                     if (update) {
-                        tokenConfig[i].setValue(String.valueOf(Player.getDisableBot()));
+                        tokenConfig[i].setValue(String.valueOf(Enemy.getDisableBot()));
                         break;
                     }
-                    Player.setDisableBot(BooleanParse(tokenConfig[i].getValue(), false));
+                    Enemy.setDisableBot(BooleanParse(tokenConfig[i].getValue(), false));
+                    break;
+                case "enemy_speed":
+                    if (update) {
+                        tokenConfig[i].setValue(String.valueOf(Enemy.getSpeed()));
+                        break;
+                    }
+                    Enemy.setSpeed(Integer.parseInt(tokenConfig[i].getValue()));
                     break;
                 case "amount_to_add":
                     if (update) {

@@ -1,5 +1,6 @@
 package com.example.JavaFXGraphics;
 
+import com.example.JavaFXGraphics.Objects.Enemy;
 import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Tools.Configuration;
 import com.example.JavaFXGraphics.Tools.Logger;
@@ -52,6 +53,7 @@ public class Graphics extends Application {
         Create object
          */
         Player.setSprite(new ImageView(new Image("/Sprites/leaves.png")));
+        Enemy enemy = new Enemy(new ImageView(new Image("/Sprites/crafter.png")));
         /*
         Add objects
          */
@@ -60,8 +62,7 @@ public class Graphics extends Application {
         highScoreLabel.setText("High Score: " + HighScore.get());
         scoreLabel.setText("Score: " + score.get());
         numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
-        ImageView enemy = new ImageView(new Image("/Sprites/crafter.png"));
-        enemy.setId("crafter.png");
+        enemy.getSprite().setId("crafter.png");
         Group root = new Group();
         /*
         Restart button functions
@@ -95,7 +96,7 @@ public class Graphics extends Application {
         /*
         Add children
          */
-        if (!Player.getDisableBot()) root.getChildren().add(enemy);
+        if (!Enemy.getDisableBot()) root.getChildren().add(enemy.getSprite());
         GameHUD(root);
         root.getChildren().add(Player.getSprite());
         stage.setScene(scene);
@@ -209,18 +210,18 @@ public class Graphics extends Application {
         Player.setHighScore(HighScore.get());
     }
 
-    private void StartGame(ImageView playerSprite, ImageView enemySprite) {
+    private void StartGame(ImageView playerSprite, Enemy enemy) {
         /*
         Spawn sprites in random locations
          */
         continueGame.set(true);
         score.set(0);
         CalculateNextPosition(playerSprite);
-        CalculateNextPosition(enemySprite);
-        if (!Player.getDisableBot()) {
+        CalculateNextPosition(enemy.getSprite());
+        if (!Enemy.getDisableBot()) {
             Thread moveEnemySpriteThread = new Thread(() -> {
                 try {
-                    MoveEnemySprite(enemySprite, playerSprite);
+                    MoveEnemySprite(enemy.getSprite(), playerSprite);
                 } catch (InterruptedException e) {
                     Logger.ERROR.LogException(e);
                 }
@@ -236,13 +237,14 @@ public class Graphics extends Application {
         if its on same Y coordination move down the X axis
         Runs concurrently
         */
+        Logger.INFO.Log("Enemy speed: " + Enemy.getSpeed());
         while (continueGame.get()) {
             if ((sprite.getTranslateX() == enemy.getTranslateX()) && (sprite.getTranslateY() == enemy.getTranslateY())) {
                 Logger.INFO.Log("Player got caught!");
                 continueGame.set(false);
                 break;
             }
-            Thread.sleep(180);
+            Thread.sleep(Enemy.getSpeed());
             if (!(sprite.getTranslateX() == enemy.getTranslateX()) || !(sprite.getTranslateY() == enemy.getTranslateY())) {
                 if (sprite.getTranslateY() != enemy.getTranslateY()) {
                     if (sprite.getTranslateY() < enemy.getTranslateY()) {
