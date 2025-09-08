@@ -1,4 +1,4 @@
-package com.example.JavaFXGraphics.Tools.Graphics;
+package com.example.JavaFXGraphics.Graphics;
 
 import javafx.stage.Stage;
 import java.util.ArrayList;

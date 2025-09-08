@@ -1,4 +1,4 @@
-package com.example.JavaFXGraphics.Tools.Graphics;
+package com.example.JavaFXGraphics.Graphics;
 
 import com.example.JavaFXGraphics.Game.Mechanics;
 import com.example.JavaFXGraphics.Objects.Enemy;

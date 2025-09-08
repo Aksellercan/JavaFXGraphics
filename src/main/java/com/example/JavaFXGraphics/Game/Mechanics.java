@@ -2,7 +2,7 @@ package com.example.JavaFXGraphics.Game;
 
 import com.example.JavaFXGraphics.Objects.Enemy;
 import com.example.JavaFXGraphics.Objects.Player;
-import com.example.JavaFXGraphics.Tools.Graphics.Window;
+import com.example.JavaFXGraphics.Graphics.Window;
 import com.example.JavaFXGraphics.Tools.Logger.Logger;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
