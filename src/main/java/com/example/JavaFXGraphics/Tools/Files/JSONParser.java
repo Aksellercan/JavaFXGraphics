@@ -25,8 +25,8 @@ public final class JSONParser extends Configuration {
         try {
             tokenConfig = LoadKeys(getFileLength());
             ReadConfig();
-            MapKeys(tokenConfig.length == 0);
-            Logger.DEBUG.Log("Using JSON Reader, using token type checker");
+            MapKeys(false);
+            Logger.DEBUG.Log("Using JSON Reader with token type checker");
         } catch (Exception e) {
             Logger.CRITICAL.LogException(e, "Unable to read configuration");
         }
@@ -83,19 +83,10 @@ public final class JSONParser extends Configuration {
     private static void WriteConfig() {
         try (FileWriter fw = new FileWriter(MkDirs("config.json"), false)) {
             fw.write("{\n");
-            int length = tokenConfig.length;
-            int currentElement = 0;
-            for (Token current : tokenConfig) {
-                Logger.DEBUG.Log("Key \"" + current.getKey() + "\", Value \"" + current.getValue() + "\"");
-                if (!current.getValue().isEmpty()) {
-                    if ((currentElement + 1) == length) {
-                        fw.write(PrintCorrectType(current) + "\n");
-                    } else {
-                        fw.write(PrintCorrectType(current) + ",\n");
-                        currentElement++;
-                    }
-                } else {
-                    Logger.DEBUG.Log("Key: \"" + current.getKey() + "\" is empty, skipping...");
+            for (int i = 0; i < tokenConfig.length; i++) {
+                Logger.DEBUG.Log("Key \"" + tokenConfig[i].getKey() + "\", Value \"" + tokenConfig[i].getValue() + "\"");
+                if (!tokenConfig[i].getValue().isEmpty()) {
+                    fw.write(PrintCorrectType(tokenConfig[i]) + ((i + 1) == tokenConfig.length ? "" : ",") + "\n");
                 }
             }
             fw.write("}");
@@ -123,7 +114,7 @@ public final class JSONParser extends Configuration {
                 if (splitLine.length == 2) {
                     splitLine = RemoveQuotes(splitLine[0], splitLine[1]);
                     Logger.DEBUG.Log("Before check: key =" + splitLine[0] + " value =" +splitLine[1]);
-                    tokenConfig[tokenCount] = TokenTypeCheck(new Token(splitLine[0].trim(), splitLine[1].trim()));
+                    GetKeyFromArray(TokenTypeCheck(new Token(splitLine[0].trim(), splitLine[1].trim())));
                     Logger.DEBUG.Log(tokenConfig[tokenCount].toString());
                     tokenCount++;
                 } else {
@@ -132,6 +123,15 @@ public final class JSONParser extends Configuration {
             }
         } catch (Exception e) {
             Logger.ERROR.LogException(e);
+        }
+    }
+
+    private static void GetKeyFromArray(Token setToken) {
+        for (int i = 0; i < tokenConfig.length; i++) {
+            if (tokenConfig[i].getKey().equals(setToken.getKey())) {
+                tokenConfig[i] = setToken;
+                break;
+            }
         }
     }
 
@@ -169,11 +169,14 @@ public final class JSONParser extends Configuration {
         StringBuilder keyMutable = new StringBuilder();
         boolean openQuotes = false;
         for (int i = 0; i < value.length(); i++) {
-//            if (value.charAt(i) == '"') {
-//                openQuotes = !openQuotes;
-//            }
-            if (value.charAt(i) == '"' || value.charAt(i) == ',') {
+            if (value.charAt(i) == '"') {
+                openQuotes = !openQuotes;
                 continue;
+            }
+            if (!openQuotes) {
+                if (value.charAt(i) == ',') {
+                    continue;
+                }
             }
             keyMutable.append(value.charAt(i));
         }

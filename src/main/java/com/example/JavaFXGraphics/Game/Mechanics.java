@@ -2,18 +2,36 @@ package com.example.JavaFXGraphics.Game;
 
 import com.example.JavaFXGraphics.Objects.Enemy;
 import com.example.JavaFXGraphics.Objects.Player;
+import com.example.JavaFXGraphics.Tools.Files.JSONParser;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import com.example.JavaFXGraphics.Graphics.Window;
 import com.example.JavaFXGraphics.Tools.Logger.Logger;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import java.util.Random;
 
 public final class Mechanics {
     private static ImageView[] objectArray;
-    private static int leftOnField;
+    private static int leftOnField = Player.getAmountToAdd();
 
     private Mechanics() {}
+
+    public static void RestartGame(Enemy enemy , Group root) {
+        Label scoreLabel = Window.getLabel("scoreLabel");
+        if (scoreLabel == null) {
+            Logger.ERROR.Log("score label is null");
+            return;
+        }
+        scoreLabel.setText("Score: " + Player.getScore());
+        Window.getPrimaryStage().setTitle("JavaFX Graphics Test: " + Player.getName());
+        CleanField(root);
+        SpawnManyInRandomLocations(Player.getAmountToAdd(), root);
+        StartGame(Player.getSprite(), enemy);
+        JSONParser.MapAndWriteConfig();
+    }
 
     public static void StartGame(ImageView playerSprite, Enemy enemy) {
         /*
@@ -23,8 +41,8 @@ public final class Mechanics {
         Window.setAtomicBoolean(true);
         Player.setScore(0);
         CalculateNextPosition(playerSprite);
-        CalculateNextPosition(enemy.getSprite());
         if (!Enemy.getDisableBot()) {
+            CalculateNextPosition(enemy.getSprite());
             Thread moveEnemySpriteThread = new Thread(() -> {
                 try {
                     MoveEnemySprite(enemy.getSprite(), playerSprite);
@@ -34,6 +52,10 @@ public final class Mechanics {
             });
             moveEnemySpriteThread.start();
         }
+    }
+
+    public static void MonitorGameStatus() {
+        CheckAndRemove();
     }
 
     public static void CleanField(Group root) {
@@ -104,7 +126,9 @@ public final class Mechanics {
         Logger.DEBUG.Log(sprite.getId() + ": X = " + sprite.getTranslateX() + ", Y = " + sprite.getTranslateY());
     }
 
-    public static void CheckAndRemove(ImageView player, Group root) {
+    public static void CheckAndRemove() {
+        Group root = Window.getRoot();
+        ImageView player = Player.getSprite();
         if (leftOnField == 0) {
             leftOnField = Player.getAmountToAdd();
             SpawnManyInRandomLocations(leftOnField, root);
@@ -119,12 +143,54 @@ public final class Mechanics {
                 objectArray[i] = null;
                 Logger.DEBUG.Log("Removed: " + object.getId() + ", amount left on field: " + leftOnField);
                 Player.setScore(Player.getScore()+1);
-                Window.getLabel("scoreLabel").setText("Score: " + Player.getScore());
+                FindLabelById("scoreLabel").setText("Score: " + Player.getScore());
                 leftOnField--;
-                Window.getLabel("numberOfBlocksOnFieldLabel").setText("Left: " + leftOnField);
+                FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + leftOnField);
                 Logger.DEBUG.Log("Left on field: " + leftOnField);
                 break;
             }
         }
+    }
+
+    private static Label FindLabelById(String labelId) {
+        Label findLabel = Window.getLabel(labelId);
+        if (findLabel == null) {
+            throw new NullPointerException("Label by ID " + labelId + " not found");
+        }
+        Logger.DEBUG.Log("Found label: " + findLabel + ", ID: " + findLabel.getId());
+        return findLabel;
+    }
+
+    private static Button FindButtonById(String buttonId) {
+        Button findButton = Window.getButton(buttonId);
+        if (findButton == null) {
+            throw new NullPointerException("Label by ID " + buttonId + " not found");
+        }
+        Logger.DEBUG.Log("Found label: " + findButton + ", ID: " + findButton.getId());
+        return findButton;
+    }
+
+    public static void GameHUD() {
+        Group root = Window.getRoot();
+        if (Player.getShowUI()) {
+            root.getChildren().add(FindLabelById("numberOfBlocksOnFieldLabel"));
+            root.getChildren().add(FindLabelById("highScoreLabel"));
+            root.getChildren().add(FindLabelById("scoreLabel"));
+        }
+        root.getChildren().remove(FindLabelById("buttonLabel"));
+        root.getChildren().remove(FindButtonById("retryButton"));
+    }
+
+    public static void GameOverScreen() {
+        Group root = Window.getRoot();
+        if (Player.getShowUI()) {
+            root.getChildren().remove(FindLabelById("numberOfBlocksOnFieldLabel"));
+            root.getChildren().remove(FindLabelById("highScoreLabel"));
+            root.getChildren().remove(FindLabelById("scoreLabel"));
+        }
+        root.getChildren().add(FindLabelById("buttonLabel"));
+        root.getChildren().add(FindButtonById("retryButton"));
+        FindLabelById("buttonLabel").setText("Score: " + Player.getScore());
+        Player.setHighScore(Player.getHighScore());
     }
 }

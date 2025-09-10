@@ -36,15 +36,16 @@ abstract class Configuration {
                 "show_ui",
                 "enemy_speed"
         };
-        if (arraySize == 0) {
-            tokenConfig = new Token[8];
-        } else {
-            if ((arraySize < keys.length)) {
-                tokenConfig = new Token[keys.length];
-            } else {
-                tokenConfig = new Token[arraySize];
-            }
-        }
+//        if (arraySize == 0) {
+//            tokenConfig = new Token[8];
+//        } else {
+//            if ((arraySize < keys.length)) {
+//                tokenConfig = new Token[keys.length];
+//            } else {
+//                tokenConfig = new Token[arraySize];
+//            }
+//        }
+        tokenConfig = new Token[keys.length];
         for (int i = 0; i < tokenConfig.length; i++) {
             tokenConfig[i] = new Token(keys[i], "");
             Logger.DEBUG.Log(tokenConfig[i].toString());

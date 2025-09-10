@@ -18,14 +18,12 @@ import javafx.stage.Stage;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Graphics extends Application {
-    private final AtomicInteger score = new AtomicInteger();
     private final Label buttonLabel = new Label();
     private final Button retryButton = new Button();
     private final Label highScoreLabel = new Label();
     private final Label numberOfBlocksOnFieldLabel = new Label();
     private final Label scoreLabel = new Label();
     private int amountToAdd;
-    private final AtomicInteger HighScore = new AtomicInteger();
 
     @Override
     public void start(Stage stage) {
@@ -42,7 +40,6 @@ public class Graphics extends Application {
         });
         Logger.INFO.Log("Started...");
         JSONParser.ReadConfigAndMap();
-        HighScore.set(Player.getHighScore());
         amountToAdd = Player.getAmountToAdd();
         /*
         Create object
@@ -54,24 +51,22 @@ public class Graphics extends Application {
          */
         AtomicInteger count = new AtomicInteger();
         retryButton.setText("Restart");
-        highScoreLabel.setText("High Score: " + HighScore.get());
-        scoreLabel.setText("Score: " + score.get());
+        highScoreLabel.setText("High Score: " + Player.getHighScore());
+        scoreLabel.setText("Score: " + Player.getScore());
         numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
         enemy.getSprite().setId("crafter.png");
         Group root = new Group();
+        root.setId("Background Root");
+        Window.setRoot(root);
+        Logger.INFO.Log("Root: " + Window.getRoot().getId());
         /*
         Restart button functions
          */
         retryButton.setOnAction(e -> {
             Logger.DEBUG.Log("Button " + e.toString());
-            GameHUD(root);
-            Mechanics.CleanField(root);
-            Mechanics.SpawnManyInRandomLocations(amountToAdd, root);
-            Mechanics.StartGame(Player.getSprite(), enemy);
-            scoreLabel.setText("Score: " + score.get());
-            stage.setTitle("JavaFX Graphics Test: " + Player.getName());
+            Mechanics.GameHUD();
+            Mechanics.RestartGame(enemy, root);
             count.set(0);
-            JSONParser.MapAndWriteConfig();
         });
         stage.setTitle("JavaFX Graphics Test: " + Player.getName());
         Scene scene = new Scene(root, stage.getHeight(), stage.getWidth());
@@ -91,17 +86,21 @@ public class Graphics extends Application {
         scoreLabel.setId("scoreLabel");
         buttonLabel.translateXProperty().set(470);
         buttonLabel.translateYProperty().set(345);
+        buttonLabel.setId("buttonLabel");
         retryButton.translateXProperty().set(465);
         retryButton.translateYProperty().set(370);
+        retryButton.setId("retryButton");
         /*
         Add children
          */
         Window.AddLabelToList(numberOfBlocksOnFieldLabel);
         Window.AddLabelToList(highScoreLabel);
         Window.AddLabelToList(scoreLabel);
+        Window.AddLabelToList(buttonLabel);
+        Window.AddButtonToList(retryButton);
         Window.setAtomicBoolean(true);
         if (!Enemy.getDisableBot()) root.getChildren().add(enemy.getSprite());
-        GameHUD(root);
+        Mechanics.GameHUD();
         root.getChildren().add(Player.getSprite());
         stage.setScene(scene);
         /*
@@ -146,42 +145,21 @@ public class Graphics extends Application {
                 /*
                 Monitor game status and increment score
                  */
-                Mechanics.CheckAndRemove(Player.getSprite(), root);
+                Mechanics.CheckAndRemove();
             } else {
                 if (count.get() < 1) {
-                    if (HighScore.get() < score.get()) {
-                        HighScore.set(score.get());
+                    if (Player.getHighScore() < Player.getScore()) {
+                        Player.setHighScore(Player.getScore());
                     }
                     stage.setTitle("Game Over!");
                     Logger.INFO.Log("Game Over!");
                     Window.setAtomicBoolean(false);
-                    GameOverScreen(root);
+                    Mechanics.GameOverScreen();
                 }
                 count.getAndIncrement();
             }
         });
         stage.show();
-    }
-
-    private void GameHUD(Group root) {
-        if (Player.getShowUI()) {
-            root.getChildren().add(numberOfBlocksOnFieldLabel);
-            root.getChildren().add(highScoreLabel);
-            root.getChildren().add(scoreLabel);
-        }
-        root.getChildren().remove(buttonLabel);
-        root.getChildren().remove(retryButton);
-    }
-
-    private void GameOverScreen(Group root) {
-        if (Player.getShowUI()) {
-            root.getChildren().remove(numberOfBlocksOnFieldLabel);
-            root.getChildren().remove(highScoreLabel);
-            root.getChildren().remove(scoreLabel);
-        }
-        root.getChildren().add(buttonLabel);
-        root.getChildren().add(retryButton);
-        buttonLabel.setText("Score: " + score.get());
-        Player.setHighScore(HighScore.get());
+        Window.setPrimaryStage(stage);
     }
 }
