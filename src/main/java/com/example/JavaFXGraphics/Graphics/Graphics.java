@@ -23,7 +23,6 @@ public class Graphics extends Application {
     private final Label highScoreLabel = new Label();
     private final Label numberOfBlocksOnFieldLabel = new Label();
     private final Label scoreLabel = new Label();
-    private int amountToAdd;
 
     @Override
     public void start(Stage stage) {
@@ -40,7 +39,6 @@ public class Graphics extends Application {
         });
         Logger.INFO.Log("Started...");
         JSONParser.ReadConfigAndMap();
-        amountToAdd = Player.getAmountToAdd();
         /*
         Create object
          */
@@ -53,12 +51,14 @@ public class Graphics extends Application {
         retryButton.setText("Restart");
         highScoreLabel.setText("High Score: " + Player.getHighScore());
         scoreLabel.setText("Score: " + Player.getScore());
-        numberOfBlocksOnFieldLabel.setText("Left: " + amountToAdd);
+        numberOfBlocksOnFieldLabel.setText("Left: " + Player.getAmountToAdd());
         enemy.getSprite().setId("crafter.png");
         Group root = new Group();
         root.setId("Background Root");
         Window.setRoot(root);
         Logger.INFO.Log("Root: " + Window.getRoot().getId());
+        Logger.INFO.Log("Player base point value: " + Player.getBasePoint());
+
         /*
         Restart button functions
          */
@@ -107,7 +107,7 @@ public class Graphics extends Application {
         Start game
          */
         Mechanics.StartGame(Player.getSprite(), enemy);
-        Mechanics.SpawnManyInRandomLocations(amountToAdd, root);
+        Mechanics.SpawnManyInRandomLocations(root);
         /*
         Keypress Event Listener
          */
@@ -119,29 +119,29 @@ public class Graphics extends Application {
                     case W:
                         if (!(Player.getSprite().getTranslateY() <= 0))
                             Player.getSprite().translateYProperty().set(Player.getSprite().getTranslateY() - 20);
-                        Logger.DEBUG.Log("move up " + e.getText());
+                        Logger.DEBUG.Log("move up " + e.getText(), false);
                         break;
                     case LEFT:
                     case A:
                         if (!(Player.getSprite().getTranslateX() <= 0))
                             Player.getSprite().translateXProperty().set(Player.getSprite().getTranslateX() - 20);
-                        Logger.DEBUG.Log("move left " + e.getText());
+                        Logger.DEBUG.Log("move left " + e.getText(), false);
                         break;
                     case RIGHT:
                     case D:
                         if (!(Player.getSprite().getTranslateX() >= 980))
                             Player.getSprite().translateXProperty().set(Player.getSprite().getTranslateX() + 20);
-                        Logger.DEBUG.Log("move right " + e.getText());
+                        Logger.DEBUG.Log("move right " + e.getText(), false);
                         break;
                     case DOWN:
                     case S:
                         if (!(Player.getSprite().getTranslateY() >= 740))
                             Player.getSprite().translateYProperty().set(Player.getSprite().getTranslateY() + 20);
-                        Logger.DEBUG.Log("move down " + e.getText());
+                        Logger.DEBUG.Log("move down " + e.getText(), false);
                         break;
                 }
-                Logger.DEBUG.Log("X axis " + Player.getSprite().getTranslateX());
-                Logger.DEBUG.Log("Y axis " + Player.getSprite().getTranslateY());
+                Logger.DEBUG.Log("X axis " + Player.getSprite().getTranslateX(), false);
+                Logger.DEBUG.Log("Y axis " + Player.getSprite().getTranslateY(), false);
                 /*
                 Monitor game status and increment score
                  */

@@ -22,12 +22,12 @@ abstract class Configuration {
     /**
      * Specify keys to write when config file is not present (first time launch).
      * Add Entries here to be loaded when config file is non-existent or empty
-     * @param arraySize Using getFileLength() method which returns the file line count or 0
      */
-    protected static Token[] LoadKeys(int arraySize) {
+    protected static Token[] LoadKeys() {
         String[] keys = {
                 "disable_bot",
                 "amount_to_add",
+                "base_point",
                 "high_score",
                 "output_debug",
                 "verbose_log_file",
@@ -36,15 +36,6 @@ abstract class Configuration {
                 "show_ui",
                 "enemy_speed"
         };
-//        if (arraySize == 0) {
-//            tokenConfig = new Token[8];
-//        } else {
-//            if ((arraySize < keys.length)) {
-//                tokenConfig = new Token[keys.length];
-//            } else {
-//                tokenConfig = new Token[arraySize];
-//            }
-//        }
         tokenConfig = new Token[keys.length];
         for (int i = 0; i < tokenConfig.length; i++) {
             tokenConfig[i] = new Token(keys[i], "");
@@ -65,6 +56,13 @@ abstract class Configuration {
                         break;
                     }
                     Player.setName(token.getValue());
+                    break;
+                case "base_point":
+                    if (update) {
+                        token.setValue(String.valueOf(Player.getBasePoint()));
+                        break;
+                    }
+                    Player.setBasePoint(Integer.parseInt(token.getValue()));
                     break;
                 case "disable_bot":
                     if (update) {

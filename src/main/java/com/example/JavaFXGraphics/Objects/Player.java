@@ -6,6 +6,7 @@ public final class Player {
     private static String name = "default";
     private static ImageView sprite;
     private static int score = 0;
+    private static int basePoint = 2;
     private static int highScore = 0;
     private static int amountToAdd = 10;
     private static boolean showIU = true;
@@ -18,6 +19,10 @@ public final class Player {
 
     public static int getScore() {
         return score;
+    }
+
+    public static int getBasePoint() {
+        return basePoint;
     }
 
     public static ImageView getSprite() {
@@ -42,6 +47,10 @@ public final class Player {
 
     public static void setScore(int newScore) {
         score = newScore;
+    }
+
+    public static void setBasePoint(int newBasePoint) {
+        basePoint = newBasePoint;
     }
 
     public static void setSprite(ImageView newSprite) {
