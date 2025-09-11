@@ -5,6 +5,7 @@ import javafx.scene.image.ImageView;
 public class Object {
     private ImageView sprite;
     private boolean doubleXP;
+    private boolean taken;
 
     public Object(ImageView sprite, String id) {
         this.sprite = sprite;
@@ -17,6 +18,14 @@ public class Object {
 
     public void setSprite(ImageView sprite) {
         this.sprite = sprite;
+    }
+
+    public boolean getTaken() {
+        return this.taken;
+    }
+
+    public void setTaken(boolean taken) {
+        this.taken = taken;
     }
 
     public boolean getDoubleXP() {

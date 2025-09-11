@@ -11,7 +11,6 @@ import com.example.JavaFXGraphics.Tools.Logger.Logger;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.util.Random;
 
 public final class Mechanics {
@@ -39,6 +38,7 @@ public final class Mechanics {
         Spawn sprites in random locations
          */
         objectArray = new Object[Player.getAmountToAdd()];
+        UpdateHudElements();
         Window.setAtomicBoolean(true);
         Player.setScore(0);
         CalculateNextPosition(playerSprite);
@@ -57,11 +57,14 @@ public final class Mechanics {
 
     public static void MonitorGameStatus() {
         CheckAndRemove();
+        UpdateHudElements();
     }
 
     public static void CleanField(Group root) {
         for (Object object : objectArray) {
-            root.getChildren().remove(object.getSprite());
+            if (object.getTaken()) {
+                root.getChildren().remove(object.getSprite());
+            }
         }
     }
 
@@ -139,7 +142,7 @@ public final class Mechanics {
             SpawnManyInRandomLocations(root);
         }
         for (int i = 0; i < objectArray.length; i++){
-            if (objectArray[i] == null) continue;
+            if (objectArray[i].getTaken()) continue;
             ImageView object = objectArray[i].getSprite();
             if ((player.getTranslateY() == object.getTranslateY() && player.getTranslateX() == object.getTranslateX())) {
                 Logger.DEBUG.Log("\nPlayer Location: X " + player.getTranslateX() + " Y " + player.getTranslateY() +
@@ -150,12 +153,11 @@ public final class Mechanics {
                 } else {
                     Player.setScore(Player.getScore() + Player.getBasePoint());
                 }
-                objectArray[i] = null;
-                Logger.DEBUG.Log("Removed: " + object.getId() + ", amount left on field: " + leftOnField);
+                objectArray[i].setTaken(true);
                 FindLabelById("scoreLabel").setText("Score: " + Player.getScore());
                 leftOnField--;
+                Logger.DEBUG.Log("Removed: " + object.getId() + ", amount left on field: " + leftOnField);
                 FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + leftOnField);
-                Logger.DEBUG.Log("Left on field: " + leftOnField);
                 break;
             }
         }
@@ -177,6 +179,12 @@ public final class Mechanics {
         }
         Logger.DEBUG.Log("Found label: " + findButton + ", ID: " + findButton.getId());
         return findButton;
+    }
+
+    private static void UpdateHudElements() {
+        FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + Player.getAmountToAdd());
+        FindLabelById("highScoreLabel").setText("High Score: " + (Player.getHighScore() < Player.getScore() ? Player.getScore() : Player.getHighScore()));
+        FindLabelById("scoreLabel").setText("Score: " + Player.getScore());
     }
 
     public static void GameHUD() {

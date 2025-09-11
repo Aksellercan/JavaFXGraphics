@@ -16,7 +16,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import java.util.concurrent.atomic.AtomicInteger;
-
+//TODO Fix restart
 public class Graphics extends Application {
     private final Label buttonLabel = new Label();
     private final Button retryButton = new Button();
@@ -49,9 +49,6 @@ public class Graphics extends Application {
          */
         AtomicInteger count = new AtomicInteger();
         retryButton.setText("Restart");
-        highScoreLabel.setText("High Score: " + Player.getHighScore());
-        scoreLabel.setText("Score: " + Player.getScore());
-        numberOfBlocksOnFieldLabel.setText("Left: " + Player.getAmountToAdd());
         enemy.getSprite().setId("crafter.png");
         Group root = new Group();
         root.setId("Background Root");
@@ -63,7 +60,7 @@ public class Graphics extends Application {
         Restart button functions
          */
         retryButton.setOnAction(e -> {
-            Logger.DEBUG.Log("Button " + e.toString());
+            Logger.DEBUG.Log("Button " + e.getEventType());
             Mechanics.GameHUD();
             Mechanics.RestartGame(enemy, root);
             count.set(0);
@@ -145,18 +142,12 @@ public class Graphics extends Application {
                 /*
                 Monitor game status and increment score
                  */
-                Mechanics.CheckAndRemove();
-            } else {
-                if (count.get() < 1) {
-                    if (Player.getHighScore() < Player.getScore()) {
-                        Player.setHighScore(Player.getScore());
-                    }
-                    stage.setTitle("Game Over!");
-                    Logger.INFO.Log("Game Over!");
-                    Window.setAtomicBoolean(false);
-                    Mechanics.GameOverScreen();
+                Mechanics.MonitorGameStatus();
+            } else if (count.get() == 0) {
+                if (Player.getHighScore() < Player.getScore()) {
+                    Player.setHighScore(Player.getScore());
                 }
-                count.getAndIncrement();
+                Mechanics.GameOverScreen();
             }
         });
         stage.show();
