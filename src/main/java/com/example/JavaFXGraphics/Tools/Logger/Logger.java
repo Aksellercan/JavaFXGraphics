@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 /**
  * Logger Tool
@@ -227,7 +228,15 @@ public enum Logger {
      * @param writeToFile   Whether to write to logfile or not
      */
     private void WriteExceptionMessageLogs(Exception e, String message, boolean writeToFile) {
-        String fullMessage = DateSeverityFormat()  + message + ". Exception: " + e.getMessage();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < e.getStackTrace().length; i++) {
+            if (i+1 == e.getStackTrace().length) {
+                sb.append("\t"+ e.getStackTrace()[i]);
+                continue;
+            }
+            sb.append("\t"+ e.getStackTrace()[i] + "\n");
+        }
+        String fullMessage = DateSeverityFormat()  + message + ". Exception: " + e.getMessage() + "\n" + sb;
         if (writeToFile) {
             SaveLog(fullMessage);
         }
