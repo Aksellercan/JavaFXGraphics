@@ -6,6 +6,7 @@ public class Object {
     private ImageView sprite;
     private boolean doubleXP;
     private boolean taken;
+    private static boolean powerUps = true;
 
     public Object(ImageView sprite, String id) {
         this.sprite = sprite;
@@ -24,8 +25,16 @@ public class Object {
         return this.taken;
     }
 
+    public static boolean getPowerUps() {
+        return powerUps;
+    }
+
     public void setTaken(boolean taken) {
         this.taken = taken;
+    }
+
+    public static void setPowerUps(boolean newPowerUps) {
+        powerUps = newPowerUps;
     }
 
     public boolean getDoubleXP() {

@@ -28,12 +28,11 @@ public final class Mechanics {
         scoreLabel.setText("Score: " + Player.getScore());
         Window.getPrimaryStage().setTitle("JavaFX Graphics Test: " + Player.getName());
         CleanField(root);
-        SpawnManyInRandomLocations(root);
-        StartGame(Player.getSprite(), enemy);
+        StartGame(Player.getSprite(), enemy, root);
         JSONParser.MapAndWriteConfig();
     }
 
-    public static void StartGame(ImageView playerSprite, Enemy enemy) {
+    public static void StartGame(ImageView playerSprite, Enemy enemy, Group root) {
         /*
         Spawn sprites in random locations
          */
@@ -42,6 +41,7 @@ public final class Mechanics {
         Window.setAtomicBoolean(true);
         Player.setScore(0);
         CalculateNextPosition(playerSprite);
+        SpawnManyInRandomLocations(root);
         if (!Enemy.getDisableBot()) {
             CalculateNextPosition(enemy.getSprite());
             Thread moveEnemySpriteThread = new Thread(() -> {
@@ -57,14 +57,11 @@ public final class Mechanics {
 
     public static void MonitorGameStatus() {
         CheckAndRemove();
-        UpdateHudElements();
     }
 
     public static void CleanField(Group root) {
         for (Object object : objectArray) {
-            if (object.getTaken()) {
-                root.getChildren().remove(object.getSprite());
-            }
+            root.getChildren().remove(object.getSprite());
         }
     }
 
@@ -109,12 +106,20 @@ public final class Mechanics {
 
     public static void SpawnManyInRandomLocations(Group root) {
         for (int i = 0; i < Player.getAmountToAdd(); i++) {
-            Object loopable = new Object(new ImageView(new Image("Sprites/nether.png")), "nether" + i + ".png");
-            CalculateNextPosition(loopable.getSprite());
-            Random rand = new Random();
-            if (rand.nextBoolean()) {
-                loopable.setDoubleXP(true);
+            Object loopable;
+            if (Object.getPowerUps()) {
+                Random rand = new Random();
+                if (rand.nextBoolean()) {
+                    loopable = new Object(new ImageView(new Image("Sprites/anchor.png")), "anchor" + i + ".png");
+                    loopable.setDoubleXP(true);
+                } else {
+                    loopable = new Object(new ImageView(new Image("Sprites/nether.png")), "nether" + i + ".png");
+                }
+            } else {
+                loopable = new Object(new ImageView(new Image("Sprites/nether.png")), "nether" + i + ".png");
             }
+
+            CalculateNextPosition(loopable.getSprite());
             Logger.DEBUG.Log("2X Power Up: " + loopable.getDoubleXP());
             objectArray[i] = loopable;
             root.getChildren().add(loopable.getSprite());
@@ -141,23 +146,24 @@ public final class Mechanics {
             leftOnField = Player.getAmountToAdd();
             SpawnManyInRandomLocations(root);
         }
-        for (int i = 0; i < objectArray.length; i++){
-            if (objectArray[i].getTaken()) continue;
-            ImageView object = objectArray[i].getSprite();
+        for (Object value : objectArray) {
+            if (value.getTaken()) continue;
+            ImageView object = value.getSprite();
             if ((player.getTranslateY() == object.getTranslateY() && player.getTranslateX() == object.getTranslateX())) {
                 Logger.DEBUG.Log("\nPlayer Location: X " + player.getTranslateX() + " Y " + player.getTranslateY() +
                         ".\nObject Location: X " + object.getTranslateX() + " Y " + object.getTranslateY(), false);
                 root.getChildren().remove(object);
-                if (objectArray[i].getDoubleXP()) {
+                if (value.getDoubleXP()) {
                     Player.setScore(Player.getScore() + (2 * Player.getBasePoint()));
                 } else {
                     Player.setScore(Player.getScore() + Player.getBasePoint());
                 }
-                objectArray[i].setTaken(true);
+                value.setTaken(true);
                 FindLabelById("scoreLabel").setText("Score: " + Player.getScore());
                 leftOnField--;
                 Logger.DEBUG.Log("Removed: " + object.getId() + ", amount left on field: " + leftOnField);
                 FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + leftOnField);
+                UpdateHudElements();
                 break;
             }
         }
@@ -168,7 +174,7 @@ public final class Mechanics {
         if (findLabel == null) {
             throw new NullPointerException("Label by ID " + labelId + " not found");
         }
-        Logger.DEBUG.Log("Found label: " + findLabel + ", ID: " + findLabel.getId());
+        Logger.DEBUG.Log("Found label: " + findLabel + ", ID: " + findLabel.getId(), false);
         return findLabel;
     }
 
@@ -177,7 +183,7 @@ public final class Mechanics {
         if (findButton == null) {
             throw new NullPointerException("Label by ID " + buttonId + " not found");
         }
-        Logger.DEBUG.Log("Found label: " + findButton + ", ID: " + findButton.getId());
+        Logger.DEBUG.Log("Found label: " + findButton + ", ID: " + findButton.getId(), false);
         return findButton;
     }
 

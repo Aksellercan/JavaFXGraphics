@@ -1,6 +1,7 @@
 package com.example.JavaFXGraphics.Tools.Files;
 
 import com.example.JavaFXGraphics.Objects.Enemy;
+import com.example.JavaFXGraphics.Objects.Object;
 import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Objects.Token;
 import com.example.JavaFXGraphics.Tools.Logger.Logger;
@@ -28,6 +29,7 @@ abstract class Configuration {
                 "disable_bot",
                 "amount_to_add",
                 "base_point",
+                "power_ups",
                 "high_score",
                 "output_debug",
                 "verbose_log_file",
@@ -49,37 +51,52 @@ abstract class Configuration {
      */
     protected static void MapKeys(boolean update) {
         for (Token token : tokenConfig) {
+            boolean fixEmpty = false;
+            if (token.getValue().isEmpty()) {
+                fixEmpty = true;
+            }
             switch (token.getKey().replace("\t", "")) {
                 case "player_name":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(Player.getName());
                         break;
                     }
                     Player.setName(token.getValue());
                     break;
                 case "base_point":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Player.getBasePoint()));
+                        break;
+                    }
+                    if (Integer.parseInt(token.getValue()) == 0) {
+                        Player.setBasePoint(Player.getBasePoint());
                         break;
                     }
                     Player.setBasePoint(Integer.parseInt(token.getValue()));
                     break;
+                case "power_ups":
+                    if (update || fixEmpty) {
+                        token.setValue(String.valueOf(Object.getPowerUps()));
+                        break;
+                    }
+                    Object.setPowerUps(BooleanParse(token.getValue(), true));
+                    break;
                 case "disable_bot":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Enemy.getDisableBot()));
                         break;
                     }
                     Enemy.setDisableBot(BooleanParse(token.getValue(), false));
                     break;
                 case "enemy_speed":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Enemy.getSpeed()));
                         break;
                     }
                     Enemy.setSpeed(Integer.parseInt(token.getValue()));
                     break;
                 case "amount_to_add":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Player.getAmountToAdd()));
                         break;
                     }
@@ -90,35 +107,35 @@ abstract class Configuration {
                     Player.setAmountToAdd(Integer.parseInt(token.getValue()));
                     break;
                 case "high_score":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Player.getHighScore()));
                         break;
                     }
                     Player.setHighScore(Integer.parseInt(token.getValue()));
                     break;
                 case "output_debug":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Logger.getDebugOutput()));
                         break;
                     }
                     Logger.setDebugOutput(BooleanParse(token.getValue(), false));
                     break;
                 case "show_ui":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Player.getShowUI()));
                         break;
                     }
                     Player.setShowIU(BooleanParse(token.getValue(), true));
                     break;
                 case "verbose_log_file":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Logger.getVerboseLogFile()));
                         break;
                     }
                     Logger.setVerboseLogFile(BooleanParse(token.getValue(), false));
                     break;
                 case "coloured_output":
-                    if (update) {
+                    if (update || fixEmpty) {
                         token.setValue(String.valueOf(Logger.getColouredOutput()));
                         break;
                     }

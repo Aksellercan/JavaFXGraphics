@@ -16,7 +16,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import java.util.concurrent.atomic.AtomicInteger;
-//TODO Fix restart
+
 public class Graphics extends Application {
     private final Label buttonLabel = new Label();
     private final Button retryButton = new Button();
@@ -103,8 +103,7 @@ public class Graphics extends Application {
         /*
         Start game
          */
-        Mechanics.StartGame(Player.getSprite(), enemy);
-        Mechanics.SpawnManyInRandomLocations(root);
+        Mechanics.StartGame(Player.getSprite(), enemy, root);
         /*
         Keypress Event Listener
          */
