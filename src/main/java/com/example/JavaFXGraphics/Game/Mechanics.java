@@ -59,13 +59,13 @@ public final class Mechanics {
         CheckAndRemove();
     }
 
-    public static void CleanField(Group root) {
+    private static void CleanField(Group root) {
         for (Object object : objectArray) {
             root.getChildren().remove(object.getSprite());
         }
     }
 
-    public static void MoveEnemySprite(ImageView enemy, ImageView sprite) throws InterruptedException {
+    private static void MoveEnemySprite(ImageView enemy, ImageView sprite) throws InterruptedException {
         /*
         get current location of sprite
         if its on same X coordination move down the Y axis
@@ -104,7 +104,7 @@ public final class Mechanics {
         }
     }
 
-    public static void SpawnManyInRandomLocations(Group root) {
+    private static void SpawnManyInRandomLocations(Group root) {
         for (int i = 0; i < Player.getAmountToAdd(); i++) {
             Object loopable;
             if (Object.getPowerUps()) {
@@ -126,7 +126,7 @@ public final class Mechanics {
         }
     }
 
-    public static void CalculateNextPosition(ImageView sprite) {
+    private static void CalculateNextPosition(ImageView sprite) {
         Random rand = new Random();
         int randX;
         int randY;
@@ -139,12 +139,13 @@ public final class Mechanics {
         Logger.DEBUG.Log(sprite.getId() + ": X = " + sprite.getTranslateX() + ", Y = " + sprite.getTranslateY());
     }
 
-    public static void CheckAndRemove() {
+    private static void CheckAndRemove() {
         Group root = Window.getRoot();
         ImageView player = Player.getSprite();
         if (leftOnField == 0) {
             leftOnField = Player.getAmountToAdd();
             SpawnManyInRandomLocations(root);
+            UpdateHudElements();
         }
         for (Object value : objectArray) {
             if (value.getTaken()) continue;
@@ -188,7 +189,7 @@ public final class Mechanics {
     }
 
     private static void UpdateHudElements() {
-        FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + Player.getAmountToAdd());
+        FindLabelById("numberOfBlocksOnFieldLabel").setText("Left: " + leftOnField);
         FindLabelById("highScoreLabel").setText("High Score: " + (Player.getHighScore() < Player.getScore() ? Player.getScore() : Player.getHighScore()));
         FindLabelById("scoreLabel").setText("Score: " + Player.getScore());
     }

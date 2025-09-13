@@ -53,6 +53,7 @@ abstract class Configuration {
         for (Token token : tokenConfig) {
             boolean fixEmpty = false;
             if (token.getValue().isEmpty()) {
+                Logger.DEBUG.Log("Token key: \"" + token.getKey() + "\" has an empty value. Using default setting...");
                 fixEmpty = true;
             }
             switch (token.getKey().replace("\t", "")) {
