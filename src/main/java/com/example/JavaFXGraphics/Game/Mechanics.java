@@ -29,6 +29,8 @@ public final class Mechanics {
         Window.getPrimaryStage().setTitle("JavaFX Graphics Test: " + Player.getName());
         CleanField(root);
         StartGame(Player.getSprite(), enemy, root);
+        leftOnField = Player.getAmountToAdd();
+        UpdateHudElements();
         JSONParser.MapAndWriteConfig();
     }
 
