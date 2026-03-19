@@ -5,6 +5,8 @@ import com.example.JavaFXGraphics.Objects.Object;
 import com.example.JavaFXGraphics.Objects.Player;
 import com.example.JavaFXGraphics.Objects.Token;
 import com.example.JavaFXGraphics.Tools.Logger.Logger;
+import com.example.JavaFXGraphics.Tools.Logger.LoggerSettings;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -33,6 +35,7 @@ abstract class Configuration {
                 "high_score",
                 "output_debug",
                 "verbose_log_file",
+                "logger_response_rate",
                 "player_name",
                 "coloured_output",
                 "show_ui",
@@ -116,10 +119,10 @@ abstract class Configuration {
                     break;
                 case "output_debug":
                     if (update || fixEmpty) {
-                        token.setValue(String.valueOf(Logger.getDebugOutput()));
+                        token.setValue(String.valueOf(LoggerSettings.getDebugOutput()));
                         break;
                     }
-                    Logger.setDebugOutput(BooleanParse(token.getValue(), false));
+                    LoggerSettings.setDebugOutput(BooleanParse(token.getValue(), false));
                     break;
                 case "show_ui":
                     if (update || fixEmpty) {
@@ -130,17 +133,24 @@ abstract class Configuration {
                     break;
                 case "verbose_log_file":
                     if (update || fixEmpty) {
-                        token.setValue(String.valueOf(Logger.getVerboseLogFile()));
+                        token.setValue(String.valueOf(LoggerSettings.getVerboseLogFile()));
                         break;
                     }
-                    Logger.setVerboseLogFile(BooleanParse(token.getValue(), false));
+                    LoggerSettings.setVerboseLogFile(BooleanParse(token.getValue(), false));
+                    break;
+                case "logger_response_rate":
+                    if (update || fixEmpty) {
+                        token.setValue(String.valueOf(LoggerSettings.getLoggerResponseRate()));
+                        break;
+                    }
+                    LoggerSettings.setLoggerResponseRate(Long.parseLong(token.getValue()));
                     break;
                 case "coloured_output":
                     if (update || fixEmpty) {
-                        token.setValue(String.valueOf(Logger.getColouredOutput()));
+                        token.setValue(String.valueOf(LoggerSettings.getColouredOutput()));
                         break;
                     }
-                    Logger.setColouredOutput(BooleanParse(token.getValue(), false));
+                    LoggerSettings.setColouredOutput(BooleanParse(token.getValue(), false));
                     break;
             }
         }

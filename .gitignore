@@ -15,8 +15,12 @@ target/
 .idea/*
 Logs/
 Logs/*
+logs/
+logs/*
 Config/
 Config/*
+config/
+config/*
 
 ### Eclipse ###
 .apt_generated

@@ -157,7 +157,7 @@ public final class Mechanics {
                         ".\nObject Location: X " + object.getTranslateX() + " Y " + object.getTranslateY(), false);
                 root.getChildren().remove(object);
                 if (value.getDoubleXP()) {
-                    Player.setScore(Player.getScore() + (2 * Player.getBasePoint()));
+                    Player.setScore(Player.getScore() + (2L * Player.getBasePoint()));
                 } else {
                     Player.setScore(Player.getScore() + Player.getBasePoint());
                 }

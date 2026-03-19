@@ -5,9 +5,9 @@ import javafx.scene.image.ImageView;
 public final class Player {
     private static String name = "default";
     private static ImageView sprite;
-    private static int score = 0;
+    private static long score = 0;
     private static int basePoint = 2;
-    private static int highScore = 0;
+    private static long highScore = 0;
     private static int amountToAdd = 10;
     private static boolean showIU = true;
 
@@ -17,7 +17,7 @@ public final class Player {
         return name;
     }
 
-    public static int getScore() {
+    public static long getScore() {
         return score;
     }
 
@@ -29,7 +29,7 @@ public final class Player {
         return sprite;
     }
 
-    public static int getHighScore() {
+    public static long getHighScore() {
         return highScore;
     }
 
@@ -45,7 +45,7 @@ public final class Player {
         name = newName;
     }
 
-    public static void setScore(int newScore) {
+    public static void setScore(long newScore) {
         score = newScore;
     }
 
@@ -58,7 +58,7 @@ public final class Player {
         sprite.setId("Player");
     }
 
-    public static void setHighScore(int newHighScore) {
+    public static void setHighScore(long newHighScore) {
         highScore = newHighScore;
     }
 

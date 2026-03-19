@@ -1,314 +1,218 @@
 package com.example.JavaFXGraphics.Tools.Logger;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 /**
- * Logger Tool
- * <br></br>
- * Logs in varying severity levels such as INFO, WARN, ERROR, DEBUG and CRITICAL
+ * Front end of Logger, runs synchronously and adds logs to log queue for backend to handle
  */
-
-public enum Logger {
+public enum Logger implements LoggerInterface {
     INFO(" [ INFO ] "),
     WARN(" [ WARN ] "),
     ERROR(" [ ERROR ] "),
     DEBUG(" [ DEBUG ] "),
-    CRITICAL(" [ CRITICAL ] "),;
+    CRITICAL(" [ CRITICAL ] "),
+    THREAD_INFO(" [ THREAD: INFO ] "),
+    THREAD_DEBUG(" [ THREAD: DEBUG ] "),
+    THREAD_WARN(" [ THREAD: WARN ] "),
+    THREAD_ERROR(" [ THREAD: ERROR ] "),
+    THREAD_CRITICAL(" [ THREAD: CRITICAL ] "),
+    ;
 
+    /**
+     * Severity level of a log
+     */
     private final String severity;
-    /**
-     * Default set to false
-     */
-    private static boolean debugOutput = false;
-    /**
-     * Default set to false
-     */
-    private static boolean verboseLogFile = false;
-    /**
-     * Default set to false for compatibility
-     */
-    private static boolean colouredOutput = false;
 
-    /**
-     * Constructor for logger takes severity level as input
-     * @param severity  Sets the severity
-     */
     Logger(String severity) {
         this.severity = severity;
     }
 
-    /**
-     * Sets whether Logger should output DEBUG severity levels
-     * @param debugOutput Takes a boolean to set
-     */
-    public static void setDebugOutput(boolean debugOutput) {
-        Logger.debugOutput = debugOutput;
-    }
-
-    /**
-     * Sets if debug severities should be included in log file or not
-     * @param verboseLogFile    Takes a boolean to set
-     */
-    public static void setVerboseLogFile(boolean verboseLogFile) {
-        Logger.verboseLogFile = verboseLogFile;
-    }
-
-    /**
-     * Enable or disable ANSI colours on console
-     * @param colouredOutput    Takes a boolean to set
-     */
-    public static void setColouredOutput(boolean colouredOutput) {
-        Logger.colouredOutput = colouredOutput;
-    }
-
-    /**
-     * Returns debugOutput value
-     * @return debugOutput value
-     */
-    public static boolean getDebugOutput() {
-        return debugOutput;
-    }
-
-    /**
-     * Returns colouredOutput value
-     * @return  colouredOutput value
-     */
-    public static boolean getColouredOutput() {
-        return colouredOutput;
-    }
-
-    /**
-     * Returns verboseLogFile value
-     * @return  verboseLogFile value
-     */
-    public static boolean getVerboseLogFile() {
-        return verboseLogFile;
-    }
-
-    /**
-     * Formats the message with date and the severity level
-     * @return Formatted message string
-     */
-    private String DateSeverityFormat() {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        return now.format(formatter) + severity;
-    }
-
-    /**
-     * Logs message and writes it to logfile
-     * @param message   Message to be logged
-     */
+    @Override
     public void Log(String message) {
-        WriteLog(message, true);
+        logQueue.add(new LogObject(0,
+                this,
+                severity,
+                message));
     }
 
-    /**
-     * Logs message and writes it to logfile if "writeToFile" variable it set to true.
-     * If debugOutput is set to false it won't display it or write it to file
-     * @param message   Message to be logged
-     * @param writeToFile Whether to write to logfile or not
-     */
+    @Override
     public void Log(String message, boolean writeToFile) {
-        WriteLog(message, writeToFile);
+        logQueue.add(new LogObject(
+                (long) logQueue.size()+1,
+                this,severity,
+                message,
+                writeToFile));
     }
 
-    /**
-     * Decides what to do with logs depending on settings.
-     *  If only "debugOutput" is set to false it won't display it and by default will not write to file.
-     *  If "debugOutput" is set to false but "verboseLogFile" is set to true, It will only write it to log file.
-     *  If only "verboseLogFile" is set to false but "debugOutput" is set to true, then it will only display it on console.
-     *  Parameter "writeToFile" still has priority on deciding whether to write to file or not, however.
-     * @param message   Message to be logged
-     * @param writeToFile   Whether to write to log file or not
-     */
-    private void WriteLog(String message, boolean writeToFile) {
-        String fullMessage = DateSeverityFormat() + message;
-        if (!debugOutput && this == DEBUG) {
-            if (verboseLogFile && writeToFile) SaveLog(fullMessage);
-            return;
-        }
-        else if (this == DEBUG) {
-            if (verboseLogFile && writeToFile) SaveLog(fullMessage);
-            ColourOutput(fullMessage);
-            return;
-        }
-        if (writeToFile) {
-            SaveLog(fullMessage);
-        }
-        ColourOutput(fullMessage);
+    @Override
+    public void Log(String message, boolean writeToFile, boolean force) {
+        logQueue.add(new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                message,
+                writeToFile,
+                force));
     }
 
-    /**
-     * Colour console output depending on severity level
-     * @param fullMessage   Message to be logged
-     */
-    private void ColourOutput(String fullMessage) {
-        if (colouredOutput) {
-            switch (this) {
-                case WARN:
-                    System.out.println(ConsoleColours.YELLOW + fullMessage + ConsoleColours.RESET);
-                    break;
-                case DEBUG:
-                    System.out.println(ConsoleColours.BLUE + fullMessage + ConsoleColours.RESET);
-                    break;
-                case ERROR:
-                case CRITICAL:
-                    System.out.println(ConsoleColours.RED + fullMessage + ConsoleColours.RESET);
-                    break;
-                case INFO:
-                    System.out.println(ConsoleColours.GREEN + fullMessage + ConsoleColours.RESET);
-                    break;
-                default:
-                    System.out.println(fullMessage);
-            }
-        } else {
-            System.out.println(fullMessage);
-        }
+    @Override
+    public void LogIfTrue(boolean statement) {
+        if (statement) logQueue.add(new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                String.format("Statement is %s", statement)));
     }
 
-    /**
-     * Used to log exceptions with messages and writes them to logfile
-     * @param e Exception to be logged
-     * @param message   Message to be logged
-     */
+    @Override
+    public void LogIfTrue(String message, boolean statement) {
+        if (statement) logQueue.add(new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                String.format("%s is %s", message, statement)));
+    }
+
+    @Override
+    public void LogIfTrue(boolean statement, boolean writeToFile, boolean force) {
+        if (statement) logQueue.add(new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                String.format("Statement is %s", statement),
+                writeToFile,
+                force));
+    }
+
+    @Override
+    public void LogIfTrue(String message, boolean statement, boolean writeToFile, boolean force) {
+        if (statement) logQueue.add(new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                message,
+                writeToFile,
+                force));
+    }
+
+    @Override
+    public void LogThread(Thread thread, String message) {
+        logQueue.add(new LogThreadObject((long) logQueue.size()+1,
+                thread,
+                this,
+                severity,
+                message));
+    }
+
+    @Override
+    public void LogThread(Thread thread, String message, boolean writeToFile) {
+        logQueue.add(new LogThreadObject((long) logQueue.size()+1,
+                thread,
+                this,
+                severity,
+                message,
+                writeToFile));
+    }
+
+    @Override
+    public void LogThread(Thread thread, String message, boolean writeToFile, boolean force) {
+        logQueue.add(new LogThreadObject((long) logQueue.size()+1,
+                thread,
+                this,
+                severity,
+                message,
+                writeToFile,
+                force));
+    }
+
+    @Override
     public void LogException(Exception e, String message) {
-        WriteExceptionMessageLogs(e, message, true);
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity,
+                message));
     }
 
-    /**
-     * Used to log exceptions with messages and writes them to logfile if "writeToFile" is set to true
-     * @param e Exception to be logged
-     * @param message   Message to be logged
-     * @param writeToFile   Whether to write to logfile or not
-     */
+    @Override
     public void LogException(Exception e, String message, boolean writeToFile) {
-        WriteExceptionMessageLogs(e, message, writeToFile);
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity,
+                message,
+                writeToFile));
     }
 
-    /**
-     * Used to log exceptions and writes them to logfile
-     * @param e Exception to be logged
-     */
+    @Override
     public void LogException(Exception e) {
-        WriteExceptions(e, true);
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity));
     }
 
-    /**
-     * Used to log exceptions and writes them to logfile if "writeToFile" is set to true
-     * @param e Exception to be logged
-     * @param writeToFile   Whether to write to logfile or not
-     */
+    @Override
     public void LogException(Exception e, boolean writeToFile) {
-        WriteExceptions(e, writeToFile);
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity,
+                writeToFile));
     }
 
-    /**
-     * Formats Exceptions with date and severity then writes them to file if "writeToFile" is set to true
-     * @param e Exception to be formatted
-     * @param writeToFile   Whether to write to logfile or not
-     */
-    private void WriteExceptions(Exception e, boolean writeToFile) {
-        String fullMessage = DateSeverityFormat()  + e.getMessage() + "\n" + GetStackTraceAsString(e);
-        if (writeToFile) {
-            SaveLog(fullMessage);
-        }
-        ColourOutput(fullMessage);
+    @Override
+    public void LogThreadException(Thread thread, Exception e) {
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                thread,
+                e,
+                this,
+                severity));
     }
 
-    /**
-     * Formats Exceptions with message, date and severity then writes them to file if "writeToFile" is set to true
-     * @param e Exception to be formatted
-     * @param message   Message to be formatted
-     * @param writeToFile   Whether to write to logfile or not
-     */
-    private void WriteExceptionMessageLogs(Exception e, String message, boolean writeToFile) {
-        String fullMessage = DateSeverityFormat()  + message + ". Exception: " + e.getMessage() + "\n" + GetStackTraceAsString(e);
-        if (writeToFile) {
-            SaveLog(fullMessage);
-        }
-        ColourOutput(fullMessage);
+    @Override
+    public void LogThreadException(Thread thread, Exception e, boolean writeToFile) {
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity,
+                writeToFile));
     }
 
-    /**
-     * Gets detailed stack trace and returns it as string with tab indentation
-     * @param e Exception stack trace to be returned
-     * @return  Stacktrace with tab indentation
-     */
-    private String GetStackTraceAsString(Exception e) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < e.getStackTrace().length; i++) {
-            if (i+1 == e.getStackTrace().length) {
-                sb.append("\t").append(e.getStackTrace()[i]);
-                continue;
-            }
-            sb.append("\t").append(e.getStackTrace()[i]).append("\n");
-        }
-        return sb.toString();
+    @Override
+    public void LogThreadException(Thread thread, Exception e, String message) {
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                thread,
+                e,
+                this,
+                severity,
+                message));
     }
 
-    /**
-     * Logs silently by not printing them to the console instead writes them to logfile
-     * @param message   Message to be logged
-     */
+    @Override
+    public void LogThreadException(Thread thread, Exception e, String message, boolean writeToFile) {
+        logQueue.add(new LogExceptionObject((long) logQueue.size()+1,
+                thread,
+                e,
+                this,
+                severity,
+                message,
+                writeToFile));
+    }
+
+    @Override
     public void LogSilently(String message) {
-        String fullMessage = DateSeverityFormat() + message;
-        SaveLog(fullMessage);
+        LogObject log = new LogObject((long) logQueue.size()+1,
+                this,
+                severity,
+                message,
+                true);
+        log.setSilent(true);
+        logQueue.add(log);
     }
 
-    /**
-     * Logs exceptions with message silently by not printing them to the console instead writes them to logfile
-     * @param e Exception to be logged
-     * @param message   Message to be logged
-     */
+    @Override
     public void LogExceptionSilently(Exception e, String message) {
-        WriteExceptionMessageLogs(e, message, true);
-    }
-
-    /**
-     * Writes the logs to logfile in directory "Logs/*" with filename as the date log was created with ".log" extension. Checks if the directory exists if not creates it.
-     * Same for logfile as well, checks if the file exists if it does, it appends to it. Otherwise, creates it.
-     * @param fullMessage   Full formatted message that will be written to logfile
-     */
-    private void SaveLog(String fullMessage) {
-        try {
-            LocalDateTime today = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            String fileName = "log_" + today.format(formatter);
-            File logFile = getLogFile(fileName);
-            try (FileWriter writer = new FileWriter(logFile, true)) {
-                writer.write(fullMessage + "\n");
-            }
-        } catch (IOException e) {
-            LogException(e, "SaveLog(String fullMessage)");
-        }
-    }
-
-    /**
-     * Returns the logfile
-     * @param fileName  logfile name
-     * @return  return the found logfile
-     * @throws IOException  If the file doesn't exist
-     */
-    private File getLogFile(String fileName) throws IOException {
-        File logPath = new File("Logs");
-        if (!logPath.exists()) {
-            boolean createDir = logPath.mkdirs();
-            if (!createDir) {
-                throw new IOException("Could not create log directory");
-            }
-        }
-        File logFile = new File(logPath + File.separator + fileName + ".log");
-        if (!logFile.exists()) {
-            boolean createFile = logFile.createNewFile();
-            if (!createFile) {
-                throw new IOException("Could not create log file");
-            }
-        }
-        return logFile;
+        LogObject log = new LogExceptionObject((long) logQueue.size()+1,
+                e,
+                this,
+                severity,
+                message,
+                true);
+        log.setSilent(true);
+        logQueue.add(log);
     }
 }
